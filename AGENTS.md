@@ -7,6 +7,7 @@ Instruções para qualquer agente de código (Claude Code, Codex) que trabalhe n
 
 Campinho é uma prancheta tática de futebol de campo (11 contra 11), web, desktop-only, projeto pessoal, **sem login**.
 
+- **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
 - Plano de implementação e divisão de tarefas entre agentes: [`docs/plano-implementacao.md`](docs/plano-implementacao.md).
 - Fora do escopo (não implementar): login, compartilhamento, bola/cones, export PNG, várias pranchetas, mobile.
