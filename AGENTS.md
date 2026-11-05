@@ -35,7 +35,7 @@ pnpm lint
 pnpm build
 ```
 
-Se `pnpm` não estiver no PATH (acontece no sandbox do Codex no Windows), chame pelo caminho completo, no PowerShell: `& "$env:LOCALAPPDATA\pnpm\bin\pnpm.cmd" test`.
+Se `pnpm` não estiver no PATH (acontece no sandbox do Codex no Windows), chame as ferramentas direto pelo Node: `node node_modules/vitest/vitest.mjs run` e `node node_modules/typescript/bin/tsc --noEmit`. Grave arquivos em UTF-8 **sem BOM**.
 
 Variáveis de ambiente em `.env.local` (fora do git): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (chave publishable `sb_publishable_…`; nunca a secret/service_role).
 
