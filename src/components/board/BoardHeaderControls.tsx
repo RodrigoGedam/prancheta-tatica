@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import { UploadIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ImportCsvDialog } from '@/components/teams/ImportCsvDialog'
+import { BoardColorButton } from './boardColors'
 import { useFormationCatalog } from '@/hooks/useFormations'
 import { useTeams } from '@/hooks/useTeamData'
 import { useBoardStore } from '@/stores/boardStore'
 import { ManageFormationsDialog } from './ManageFormationsDialog'
-import { SIDES, SIDE_LABEL, useSideActions, useSideModel, type SideModel } from './useBoardModel'
+import { SIDE_LABEL, useSideActions, useSideModel, type SideModel } from './useBoardModel'
 
 const selectClass =
   'h-9 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none focus:border-accent/70 disabled:opacity-50'
@@ -47,7 +45,7 @@ function SideControls({
 
   return (
     <div className="flex shrink-0 items-center gap-1.5">
-      <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ background: model.team ? model.color : '#3a4652' }} />
+      <BoardColorButton model={model} />
       <label htmlFor={id} className="text-[11px] tracking-[0.06em] text-muted uppercase">
         {SIDE_LABEL[side]}
       </label>
@@ -96,26 +94,3 @@ function SideControls({
   )
 }
 
-/** Botão "Importar CSV" da prancheta: o time importado entra no primeiro lado vazio. */
-export function BoardImportButton() {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <Button variant="primary" className="ml-1.5 h-9" onClick={() => setOpen(true)}>
-        <UploadIcon size={16} aria-hidden="true" />
-        Importar CSV
-      </Button>
-      <ImportCsvDialog
-        open={open}
-        onOpenChange={setOpen}
-        onImported={(teamId) => {
-          setOpen(false)
-          const { sides, setTeam } = useBoardStore.getState()
-          if (SIDES.some((s) => sides[s].teamId === teamId)) return
-          const empty = (['home', 'away'] as const).find((s) => !sides[s].teamId)
-          if (empty) setTeam(empty, teamId)
-        }}
-      />
-    </>
-  )
-}

@@ -1,5 +1,5 @@
 import { Link, Outlet, createRootRoute, useRouterState } from '@tanstack/react-router'
-import { BoardHeaderControls, BoardImportButton } from '@/components/board/BoardHeaderControls'
+import { BoardHeaderControls } from '@/components/board/BoardHeaderControls'
 
 export const Route = createRootRoute({ component: RootLayout })
 
@@ -24,7 +24,6 @@ function RootLayout() {
           <Link to="/times" className={navLink} activeProps={{ className: navLinkActive }}>
             Times
           </Link>
-          {onBoard ? <BoardImportButton /> : null}
         </nav>
       </header>
       <Outlet />
