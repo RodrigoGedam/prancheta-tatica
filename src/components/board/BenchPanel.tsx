@@ -4,6 +4,7 @@ import { tokenMark } from '@/lib/board/placement'
 import { textColorOn } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 import { useBoardStore } from '@/stores/boardStore'
+import { useToolStore } from '@/stores/toolStore'
 import { BENCH_DRAG_MIME, serializeBenchDrag } from './benchDrag'
 import { SaveFormationDialog } from './SaveFormationDialog'
 import { SIDE_LABEL, useSideActions, type SideModel } from './useBoardModel'
@@ -29,6 +30,8 @@ const iconButton =
   'flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-line-strong bg-control p-0 text-ink-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-40'
 
 function BenchSection({ model }: { model: SideModel }) {
+  // Jogadores só se movem com a ferramenta Selecionar (spec §6).
+  const selecting = useToolStore((s) => s.tool === 'select')
   const { side, team, bench, state } = model
   const actions = useSideActions(model)
   const toggleHidden = useBoardStore((s) => s.toggleHidden)
@@ -96,13 +99,16 @@ function BenchSection({ model }: { model: SideModel }) {
             return (
               <li
                 key={p.id}
-                draggable
+                draggable={selecting}
                 onDragStart={(e) => {
                   e.dataTransfer.setData(BENCH_DRAG_MIME, serializeBenchDrag(side, p.id))
                   e.dataTransfer.effectAllowed = 'move'
                 }}
                 title={`${p.name} · ${p.position}`}
-                className="flex cursor-grab items-center gap-2.5 rounded-lg bg-[#1f2730] px-2 py-1.5 active:cursor-grabbing"
+                className={cn(
+                  'flex items-center gap-2.5 rounded-lg bg-[#1f2730] px-2 py-1.5',
+                  selecting && 'cursor-grab active:cursor-grabbing',
+                )}
               >
                 <span
                   aria-hidden="true"

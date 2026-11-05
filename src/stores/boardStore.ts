@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Point, Side } from '@/lib/geometry/pitch'
 import type { Placement } from '@/lib/board/placement'
+import type { DrawShape } from '@/lib/geometry/shapes'
 
 export const DEFAULT_FORMATION = '4-3-3'
 
@@ -34,6 +35,11 @@ interface BoardState {
   setFormationId: (side: Side, formationId: string) => void
   toggleHidden: (side: Side) => void
   setColorOverride: (side: Side, color: string | null) => void
+  /** Desenhos (camada própria, independente dos times), na ordem de desenho. */
+  shapes: DrawShape[]
+  addShape: (shape: DrawShape) => void
+  updateShape: (shape: DrawShape) => void
+  removeShape: (id: string) => void
 }
 
 const emptySide = (formationId = DEFAULT_FORMATION): SideState => ({
@@ -55,6 +61,11 @@ export const useBoardStore = create<BoardState>()((set) => {
   return {
     sides: { home: emptySide(), away: emptySide() },
     nextZ: 1,
+    shapes: [],
+
+    addShape: (shape) => set((state) => ({ shapes: [...state.shapes, shape] })),
+    updateShape: (shape) => set((state) => ({ shapes: state.shapes.map((s) => (s.id === shape.id ? shape : s)) })),
+    removeShape: (id) => set((state) => ({ shapes: state.shapes.filter((s) => s.id !== id) })),
 
     setTeam: (side, teamId) =>
       set((state) => ({

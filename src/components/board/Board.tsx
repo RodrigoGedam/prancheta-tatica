@@ -6,9 +6,12 @@ import { useElementSize } from '@/hooks/useElementSize'
 import { stackInfo, tokenMark } from '@/lib/board/placement'
 import { PITCH, RUNOFF, computeScale, isInsidePitch, pxToMeters, type Side } from '@/lib/geometry/pitch'
 import { useBoardStore } from '@/stores/boardStore'
+import { useToolStore } from '@/stores/toolStore'
+import { CaptureLayer, ShapesLayer } from './DrawingLayers'
 import { PitchMarkings } from './PitchMarkings'
 import { PlayerToken } from './PlayerToken'
 import { PlayerTooltip } from './PlayerTooltip'
+import { TextEditor } from './TextEditor'
 import { BENCH_DRAG_MIME, benchSideAt, parseBenchDrag } from './benchDrag'
 import { dropPlayer, type PlacedPlayer, type SideModel } from './useBoardModel'
 
@@ -30,6 +33,7 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
   const [hovered, setHovered] = useState<TokenItem | null>(null)
   const [dragging, setDragging] = useState(false)
   const [benchOver, setBenchOver] = useState(false)
+  const selecting = useToolStore((s) => s.tool === 'select')
 
   const scale = computeScale(width, height)
   const stageWidth = Math.floor((PITCH.width + 2 * RUNOFF) * scale)
@@ -72,6 +76,7 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
 
   function handleBenchDrop(e: DragEvent<HTMLDivElement>) {
     setBenchOver(false)
+    if (useToolStore.getState().tool !== 'select') return
     const data = parseBenchDrag(e.dataTransfer.getData(BENCH_DRAG_MIME))
     const stage = stageRef.current
     if (!data || !stage) return
@@ -98,11 +103,21 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
           onDragLeave={() => setBenchOver(false)}
           onDrop={handleBenchDrop}
         >
-          <Stage ref={stageRef} width={stageWidth} height={stageHeight}>
+          <Stage
+            ref={stageRef}
+            width={stageWidth}
+            height={stageHeight}
+            onMouseDown={() => {
+              // Desenhos e o ponto de controle cancelam o bubble; qualquer outro clique solta a seleção.
+              const tools = useToolStore.getState()
+              if (tools.tool === 'select' && tools.selectedId) tools.select(null)
+            }}
+          >
             <Layer listening={false}>
               <PitchMarkings scale={scale} />
             </Layer>
-            <Layer>
+            <ShapesLayer scale={scale} />
+            <Layer listening={selecting}>
               <Group x={RUNOFF * scale} y={RUNOFF * scale} scaleX={scale} scaleY={scale}>
                 {tokens.map((t) => {
                   const key = `${t.side}:${t.player.id}`
@@ -118,7 +133,7 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
                       label={t.player.nickname ?? t.player.name}
                       stackSize={stack?.size ?? 1}
                       showBadge={stack?.isTop ?? true}
-                      draggable
+                      draggable={selecting}
                       onDragStart={() => {
                         setDragging(true)
                         setHovered(null)
@@ -130,8 +145,10 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
                 })}
               </Group>
             </Layer>
+            <CaptureLayer scale={scale} />
           </Stage>
-          {hovered && !dragging ? (
+          <TextEditor scale={scale} />
+          {hovered && !dragging && selecting ? (
             <PlayerTooltip
               player={hovered.player}
               teamName={hovered.model.team?.name ?? ''}
