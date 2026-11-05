@@ -7,7 +7,14 @@ import type { FormationDef } from '@/lib/formations'
 import type { Point, Side } from '@/lib/geometry/pitch'
 import type { TeamSummary } from '@/lib/supabase/queries'
 import type { FormationSlot, PlayerRow } from '@/lib/supabase/schemas'
-import { DEFAULT_FORMATION, useBoardStore, type SideState } from '@/stores/boardStore'
+import {
+  DEFAULT_FORMATION,
+  forgetTeam,
+  prunePlayersEverywhere,
+  useBoardStore,
+  withoutHistory,
+  type SideState,
+} from '@/stores/boardStore'
 
 export const SIDES: readonly Side[] = ['away', 'home']
 export const SIDE_LABEL: Record<Side, string> = { home: 'Mandante', away: 'Visitante' }
@@ -20,6 +27,8 @@ export interface PlacedPlayer {
 export interface SideModel {
   side: Side
   state: SideState
+  /** Esconder ativo (fora do histórico de desfazer). */
+  hidden: boolean
   team: TeamSummary | undefined
   players: PlayerRow[]
   playersLoaded: boolean
@@ -35,6 +44,7 @@ const NO_PLAYERS: PlayerRow[] = []
 
 export function useSideModel(side: Side): SideModel {
   const state = useBoardStore((s) => s.sides[side])
+  const hidden = useBoardStore((s) => s.hidden[side])
   const teams = useTeams()
   const players = usePlayers(state.teamId ?? undefined)
   const catalog = useFormationCatalog()
@@ -52,6 +62,7 @@ export function useSideModel(side: Side): SideModel {
     return {
       side,
       state,
+      hidden,
       team,
       players: list,
       playersLoaded: Boolean(team) && players.isSuccess,
@@ -61,7 +72,7 @@ export function useSideModel(side: Side): SideModel {
       onPitch,
       bench: list.filter((p) => !placedIds.has(p.id)),
     }
-  }, [side, state, teams.data, players.data, players.isSuccess, catalog])
+  }, [side, state, hidden, teams.data, players.data, players.isSuccess, catalog])
 }
 
 /** Ações que dependem dos dados do lado (formação, elenco). */
@@ -101,7 +112,7 @@ function applyFormation(side: Side, formationId: string, players: readonly Playe
 export function dropPlayer(side: Side, playerId: string, point: Point): Point {
   const store = useBoardStore.getState()
   const others = (['home', 'away'] as const).flatMap((s) =>
-    store.sides[s].hidden ? [] : store.sides[s].placements.filter((p) => !(s === side && p.playerId === playerId)),
+    store.hidden[s] ? [] : store.sides[s].placements.filter((p) => !(s === side && p.playerId === playerId)),
   )
   const target = snapTarget(point, others) ?? point
   store.placePlayer(side, playerId, target)
@@ -113,26 +124,32 @@ export function useBoardSync(models: readonly SideModel[]) {
   const teams = useTeams()
   const catalog = useFormationCatalog()
   useEffect(() => {
-    for (const m of models) {
-      const store = useBoardStore.getState()
-      // Time excluído em /times: limpa o lado.
-      if (m.state.teamId && teams.isSuccess && !m.team) {
-        store.setTeam(m.side, null)
-        continue
-      }
-      if (!m.team || !m.playersLoaded) continue
-      if (!m.state.initialized) {
-        // Primeira vez (ou elenco reimportado, ver resetTeam): titulares na formação escolhida.
-        store.setPlacements(m.side, initialPlacements(m.players, m.formation.slots, m.side))
-        continue
-      }
-      // Jogador excluído em /times: tira do campo (senão vira um ponto invisível de empilhamento).
-      const ids = new Set(m.players.map((p) => p.id))
-      if (m.state.placements.some((p) => !ids.has(p.playerId))) store.prunePlacements(m.side, ids)
-      // Formação custom excluída: volta para a padrão e reposiciona.
-      if (catalog.isLoaded && m.formation.id !== m.state.formationId) {
-        applyFormation(m.side, DEFAULT_FORMATION, m.players, m.formation.slots)
-      }
-    }
+    // Ajustes automáticos completam a ação do usuário que os provocou: não viram passos de desfazer.
+    withoutHistory(() => syncSides(models, teams.isSuccess, catalog.isLoaded))
   }, [models, teams.isSuccess, catalog])
+}
+
+/** Corrige cada lado conforme os dados carregados (ver useBoardSync). */
+function syncSides(models: readonly SideModel[], teamsLoaded: boolean, catalogLoaded: boolean) {
+  for (const m of models) {
+    const store = useBoardStore.getState()
+    // Time excluído em /times: limpa o lado.
+    if (m.state.teamId && teamsLoaded && !m.team) {
+      forgetTeam(m.state.teamId)
+      continue
+    }
+    if (!m.team || !m.playersLoaded) continue
+    if (!m.state.initialized) {
+      // Primeira vez (ou elenco reimportado, ver resetTeam): titulares na formação escolhida.
+      store.setPlacements(m.side, initialPlacements(m.players, m.formation.slots, m.side))
+      continue
+    }
+    // Jogador excluído em /times: tira do campo (senão vira um ponto invisível de empilhamento).
+    const ids = new Set(m.players.map((p) => p.id))
+    if (m.state.placements.some((p) => !ids.has(p.playerId))) prunePlayersEverywhere(m.team.id, ids)
+    // Formação custom excluída: volta para a padrão e reposiciona.
+    if (catalogLoaded && m.formation.id !== m.state.formationId) {
+      applyFormation(m.side, DEFAULT_FORMATION, m.players, m.formation.slots)
+    }
+  }
 }

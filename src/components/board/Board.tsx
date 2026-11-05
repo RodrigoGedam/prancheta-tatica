@@ -42,7 +42,7 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
   const tokens = useMemo(
     () =>
       sides
-        .filter((m) => m.team && !m.state.hidden)
+        .filter((m) => m.team && !m.hidden)
         .flatMap((m) => m.onPitch.map((p): TokenItem => ({ ...p, side: m.side, model: m })))
         .sort((a, b) => a.placement.z - b.placement.z),
     [sides],

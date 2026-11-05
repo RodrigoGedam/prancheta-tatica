@@ -1,6 +1,26 @@
 import { useEffect } from 'react'
-import { useBoardStore } from '@/stores/boardStore'
+import { redo, undo, useBoardStore } from '@/stores/boardStore'
 import { TOOLS, useToolStore } from '@/stores/toolStore'
+
+/** Desfaz/refaz e ajusta a seleção (some se o desenho deixou de existir; senão a toolbar mostra o estilo dele). */
+export function undoBoard() {
+  undo()
+  dropMissingSelection()
+}
+
+export function redoBoard() {
+  redo()
+  dropMissingSelection()
+}
+
+function dropMissingSelection() {
+  const tools = useToolStore.getState()
+  const ids = new Set(useBoardStore.getState().shapes.map((s) => s.id))
+  const selected = useBoardStore.getState().shapes.find((s) => s.id === tools.selectedId)
+  // O desenho pode ter voltado com outro estilo: a toolbar acompanha.
+  if (tools.selectedId) tools.select(selected ? selected.id : null, selected?.style)
+  if (tools.editingTextId && !ids.has(tools.editingTextId)) tools.editText(null)
+}
 
 /** Não roubar teclas de campos de texto nem de diálogos abertos. */
 function shouldIgnore(e: KeyboardEvent): boolean {
@@ -13,12 +33,23 @@ function shouldIgnore(e: KeyboardEvent): boolean {
 
 /**
  * Atalhos da prancheta: V P A C R O T E (ferramentas), D (tracejado), Esc (soltar seleção / voltar ao Selecionar),
- * Delete/Backspace (apagar o desenho selecionado). Ctrl+Z/Ctrl+Y chegam na etapa 5.
+ * Delete/Backspace (apagar o desenho selecionado), Ctrl+Z (desfazer), Ctrl+Y ou Ctrl+Shift+Z (refazer).
  */
 export function useDrawShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || shouldIgnore(e)) return
+      if (e.altKey || shouldIgnore(e)) return
+      if (e.ctrlKey || e.metaKey) {
+        const k = e.key.toLowerCase()
+        if (k === 'z' && !e.shiftKey) {
+          e.preventDefault()
+          undoBoard()
+        } else if (k === 'y' || (k === 'z' && e.shiftKey)) {
+          e.preventDefault()
+          redoBoard()
+        }
+        return
+      }
       const tools = useToolStore.getState()
       const key = e.key.toUpperCase()
 

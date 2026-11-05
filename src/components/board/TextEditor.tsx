@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { RUNOFF } from '@/lib/geometry/pitch'
 import type { TextShape } from '@/lib/geometry/shapes'
-import { useBoardStore } from '@/stores/boardStore'
+import { endHistoryBatch, useBoardStore } from '@/stores/boardStore'
 import { useToolStore } from '@/stores/toolStore'
 
 /**
@@ -33,6 +33,7 @@ function TextArea({ shape, scale }: { shape: TextShape; scale: number }) {
     if (text.trim() === '') board.removeShape(shape.id)
     else if (text !== shape.text) board.updateShape({ ...shape, text })
     useToolStore.getState().editText(null)
+    endHistoryBatch()
   }
 
   const fontPx = shape.fontSize * scale

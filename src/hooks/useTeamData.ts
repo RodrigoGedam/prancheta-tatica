@@ -11,7 +11,7 @@ import {
   updateTeam,
 } from '@/lib/supabase/queries'
 import type { ImportPlayer, PlayerInput, TeamInput } from '@/lib/supabase/schemas'
-import { useBoardStore } from '@/stores/boardStore'
+import { resetTeamEverywhere } from '@/stores/boardStore'
 
 export const teamKeys = {
   all: ['teams'] as const,
@@ -88,7 +88,7 @@ export function useImportTeam() {
     onSuccess: async (teamId) => {
       await invalidateTeam(qc, teamId)
       // Ids dos jogadores mudaram: a prancheta remonta a formação com o elenco novo (já recarregado).
-      useBoardStore.getState().resetTeam(teamId)
+      resetTeamEverywhere(teamId)
     },
   })
 }

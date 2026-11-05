@@ -1,8 +1,10 @@
 import { Redo2Icon, Undo2Icon } from 'lucide-react'
 import { DRAW_COLORS, type StrokeWidth } from '@/lib/geometry/shapes'
 import { cn } from '@/lib/utils'
+import { useStore } from 'zustand'
 import { useBoardStore } from '@/stores/boardStore'
 import { TOOLS, useToolStore, type Tool } from '@/stores/toolStore'
+import { redoBoard, undoBoard } from './useDrawShortcuts'
 
 /** Ícones do mockup (traço 2, viewBox 24). */
 const TOOL_ICON: Record<Tool, string> = {
@@ -22,6 +24,9 @@ const WIDTHS: readonly { id: StrokeWidth; label: string; px: number }[] = [
   { id: 'thick', label: 'Grossa', px: 6 },
 ]
 
+const historyButton =
+  'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-ink-soft outline-none hover:bg-control hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-default disabled:bg-transparent disabled:text-faint'
+
 /** Muda o estilo da ferramenta e, se houver um desenho selecionado, aplica nele também. */
 function applyStyle(patch: Partial<ReturnType<typeof useToolStore.getState>['style']>) {
   const { selectedId } = useToolStore.getState()
@@ -34,6 +39,8 @@ export function DrawToolbar() {
   const tool = useToolStore((s) => s.tool)
   const style = useToolStore((s) => s.style)
   const { setTool, setColor, setWidth, toggleDashed } = useToolStore.getState()
+  const canUndo = useStore(useBoardStore.temporal, (s) => s.pastStates.length > 0)
+  const canRedo = useStore(useBoardStore.temporal, (s) => s.futureStates.length > 0)
 
   return (
     <aside
@@ -141,22 +148,23 @@ export function DrawToolbar() {
       </div>
 
       <div className="flex-1" />
-      {/* Desfazer/refazer: etapa 5. */}
       <button
         type="button"
-        disabled
+        disabled={!canUndo}
+        onClick={undoBoard}
         aria-label="Desfazer (Ctrl+Z)"
-        title="Desfazer (Ctrl+Z) — chega na etapa 5"
-        className="flex size-11 items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-faint"
+        title="Desfazer (Ctrl+Z)"
+        className={historyButton}
       >
         <Undo2Icon size={20} aria-hidden="true" />
       </button>
       <button
         type="button"
-        disabled
+        disabled={!canRedo}
+        onClick={redoBoard}
         aria-label="Refazer (Ctrl+Y)"
-        title="Refazer (Ctrl+Y) — chega na etapa 5"
-        className="flex size-11 items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-faint"
+        title="Refazer (Ctrl+Y)"
+        className={historyButton}
       >
         <Redo2Icon size={20} aria-hidden="true" />
       </button>

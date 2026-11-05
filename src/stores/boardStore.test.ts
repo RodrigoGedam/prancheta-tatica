@@ -32,7 +32,8 @@ describe('boardStore', () => {
     s().setFormationId('home', '5-3-2')
     s().toggleHidden('home')
     s().setTeam('home', 't2')
-    expect(s().sides.home).toMatchObject({ teamId: 't2', formationId: '5-3-2', hidden: false, initialized: false })
+    expect(s().sides.home).toMatchObject({ teamId: 't2', formationId: '5-3-2', initialized: false })
+    expect(s().hidden.home).toBe(false)
   })
 
   it('prunePlacements tira só quem saiu do elenco', () => {

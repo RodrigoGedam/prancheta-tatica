@@ -16,7 +16,7 @@ import {
   type ShapeStyle,
   type StrokeWidth,
 } from '@/lib/geometry/shapes'
-import { useBoardStore } from '@/stores/boardStore'
+import { beginHistoryBatch, endHistoryBatch, useBoardStore } from '@/stores/boardStore'
 import { useToolStore, type Tool } from '@/stores/toolStore'
 import { ShapeView } from './ShapeView'
 
@@ -64,7 +64,11 @@ export function ShapesLayer({ scale }: ScaledProps) {
               interactive={interactive}
               onSelect={() => useToolStore.getState().select(shape.id, shape.style)}
               onMoved={(dx, dy) => useBoardStore.getState().updateShape(translateShape(shape, dx, dy))}
-              onEditText={() => useToolStore.getState().editText(shape.id)}
+              onEditText={() => {
+                // A edição inteira do texto vira um passo só no histórico.
+                beginHistoryBatch()
+                useToolStore.getState().editText(shape.id)
+              }}
             />
           ),
         )}
@@ -111,6 +115,9 @@ function Selection({ shape, scale }: { shape: DrawShape; scale: number }) {
             onMouseDown={(e) => {
               e.cancelBubble = true
             }}
+            // O arrasto do ponto de controle atualiza ao vivo, mas vira um passo só no histórico.
+            onDragStart={beginHistoryBatch}
+            onDragEnd={endHistoryBatch}
             onMouseEnter={(e) => {
               const stage = e.target.getStage()
               if (stage) stage.container().style.cursor = 'move'
@@ -184,6 +191,7 @@ export function CaptureLayer({ scale }: ScaledProps) {
   useEffect(() => {
     drag.current = null
     erasing.current = false
+    endHistoryBatch()
     if (tool !== 'select') return
     // Volta o cursor ao normal quando sai das ferramentas de desenho.
     const container = groupRef.current?.getStage()?.container() ?? document.querySelector<HTMLElement>('.konvajs-content')
@@ -206,12 +214,18 @@ export function CaptureLayer({ scale }: ScaledProps) {
     if (!p) return
     const { style } = useToolStore.getState()
     if (tool === 'eraser') {
+      // Passar a borracha por vários desenhos é um passo só.
+      beginHistoryBatch()
       erasing.current = true
       erase(p)
       return
     }
     if (tool === 'text') {
       const id = newShapeId()
+      // Fecha antes o texto em edição (o blur dele viria só depois deste mousedown).
+      if (document.activeElement instanceof HTMLTextAreaElement) document.activeElement.blur()
+      // Criar + digitar o texto vira um passo só (texto vazio é descartado sem deixar rastro).
+      beginHistoryBatch()
       useBoardStore
         .getState()
         .addShape({ id, type: 'text', style, x: p.x, y: p.y - TEXT_SIZE[style.width] * 0.6, text: '', fontSize: TEXT_SIZE[style.width] })
@@ -237,6 +251,7 @@ export function CaptureLayer({ scale }: ScaledProps) {
   }
 
   function onUp() {
+    if (erasing.current) endHistoryBatch()
     erasing.current = false
     const d = drag.current
     drag.current = null

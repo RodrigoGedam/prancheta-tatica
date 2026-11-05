@@ -34,7 +34,7 @@ function BenchSection({ model }: { model: SideModel }) {
   const selecting = useToolStore((s) => s.tool === 'select')
   const { side, team } = model
   const dropping = useBenchDropStore((s) => s.target === side) && team !== undefined
-  const { bench, state } = model
+  const { bench } = model
   const actions = useSideActions(model)
   const toggleHidden = useBoardStore((s) => s.toggleHidden)
   const [saving, setSaving] = useState(false)
@@ -64,7 +64,7 @@ function BenchSection({ model }: { model: SideModel }) {
           <span className="text-xs text-muted">
             {SIDE_LABEL[side]}
             {team ? ` · banco (${bench.length})` : ''}
-            {state.hidden ? ' · escondido' : ''}
+            {model.hidden ? ' · escondido' : ''}
           </span>
         </div>
         <button
@@ -79,14 +79,14 @@ function BenchSection({ model }: { model: SideModel }) {
         </button>
         <button
           type="button"
-          className={cn(iconButton, state.hidden && 'border-accent text-accent')}
-          aria-label={state.hidden ? 'Mostrar time' : 'Esconder time'}
-          aria-pressed={state.hidden}
-          title={state.hidden ? 'Mostrar' : 'Esconder'}
+          className={cn(iconButton, model.hidden && 'border-accent text-accent')}
+          aria-label={model.hidden ? 'Mostrar time' : 'Esconder time'}
+          aria-pressed={model.hidden}
+          title={model.hidden ? 'Mostrar' : 'Esconder'}
           disabled={!team}
           onClick={() => toggleHidden(side)}
         >
-          {state.hidden ? <EyeIcon size={17} aria-hidden="true" /> : <EyeOffIcon size={17} aria-hidden="true" />}
+          {model.hidden ? <EyeIcon size={17} aria-hidden="true" /> : <EyeOffIcon size={17} aria-hidden="true" />}
         </button>
         <button
           type="button"
@@ -102,7 +102,7 @@ function BenchSection({ model }: { model: SideModel }) {
 
       {!team ? (
         <p className="m-0 text-sm text-muted">Escolha o {SIDE_LABEL[side].toLowerCase()} no topo.</p>
-      ) : state.hidden ? null : !model.playersLoaded ? (
+      ) : model.hidden ? null : !model.playersLoaded ? (
         <p className="m-0 text-sm text-muted">Carregando elenco…</p>
       ) : bench.length === 0 ? (
         <p className="m-0 text-sm text-muted">Todos os jogadores estão em campo.</p>
