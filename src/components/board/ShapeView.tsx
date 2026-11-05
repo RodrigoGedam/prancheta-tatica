@@ -1,11 +1,15 @@
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { Ellipse, Group, Line, Rect, Shape, Text } from 'react-konva'
-import { parseHex } from '@/lib/colors'
+import { parseHex, textColorOn } from '@/lib/colors'
 import {
   FILL_OPACITY,
   STROKE_WIDTH_M,
   arrowHead,
   arrowHeadSize,
+  arrowShaft,
+  strokeWidthOf,
+  type ArrowShape,
+  type CurveShape,
   type DrawShape,
   type ShapeStyle,
 } from '@/lib/geometry/shapes'
@@ -13,18 +17,20 @@ import type { Point } from '@/lib/geometry/pitch'
 
 /** Área extra de clique (m) em volta de traços finos, para selecionar sem precisar de precisão. */
 const HIT_STROKE = 1.6
+/** Contorno (m de cada lado) das flechas, para destacar do gramado e das linhas. */
+const OUTLINE = 0.16
 
 function withAlpha(hex: string, alpha: number): string {
   const rgb = parseHex(hex)
   return rgb ? `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})` : hex
 }
 
-function strokeProps(style: ShapeStyle) {
-  const width = STROKE_WIDTH_M[style.width]
+/** `dashBase`: largura que define o padrão do tracejado (o contorno usa a do traço, para os traços coincidirem). */
+function strokeProps(style: ShapeStyle, width = STROKE_WIDTH_M[style.width], stroke = style.color, dashBase = width) {
   return {
-    stroke: style.color,
+    stroke,
     strokeWidth: width,
-    dash: style.dashed ? [width * 3, width * 2.2] : undefined,
+    dash: style.dashed ? [dashBase * 3, dashBase * 2.2] : undefined,
     hitStrokeWidth: Math.max(HIT_STROKE, width),
     perfectDrawEnabled: false,
   }
@@ -32,9 +38,46 @@ function strokeProps(style: ShapeStyle) {
 
 const flat = (points: readonly Point[]) => points.flatMap((p) => [p.x, p.y])
 
-function Head({ from, to, style }: { from: Point; to: Point; style: ShapeStyle }) {
-  const [left, tip, right] = arrowHead(from, to, arrowHeadSize(style))
-  return <Line points={flat([left, tip, right])} closed fill={style.color} stroke={style.color} strokeWidth={0.05} />
+/** Escuro sob cores claras, claro sob cores escuras (ex.: flecha preta). */
+function outlineColor(color: string): string {
+  return withAlpha(textColorOn(color), 0.85)
+}
+
+/**
+ * Flecha reta ou curva com contorno: primeiro os contornos (corpo e ponta), depois as cores por cima,
+ * assim a borda nunca cruza a junção entre corpo e ponta. O corpo para no meio da ponta (`arrowShaft`).
+ */
+function ArrowView({ shape }: { shape: ArrowShape | CurveShape }) {
+  const style = shape.style
+  const width = strokeWidthOf(shape)
+  const outline = outlineColor(style.color)
+  const shaft = arrowShaft(shape)
+  const head = flat(arrowHead(shape.type === 'curve' ? shape.control : shape.from, shape.to, arrowHeadSize(style)))
+  const control = shaft.control
+  const body = (color: string, w: number, key: string) =>
+    control ? (
+      <Shape
+        key={key}
+        {...strokeProps(style, w, color, width)}
+        lineCap="butt"
+        sceneFunc={(ctx, node) => {
+          ctx.beginPath()
+          ctx.moveTo(shaft.from.x, shaft.from.y)
+          ctx.quadraticCurveTo(control.x, control.y, shaft.to.x, shaft.to.y)
+          ctx.strokeShape(node)
+        }}
+      />
+    ) : (
+      <Line key={key} points={flat([shaft.from, shaft.to])} lineCap="butt" {...strokeProps(style, w, color, width)} />
+    )
+  return (
+    <>
+      {body(outline, width + OUTLINE * 2, 'body-outline')}
+      <Line points={head} closed fill={outline} stroke={outline} strokeWidth={OUTLINE * 2} lineJoin="round" />
+      {body(style.color, width, 'body')}
+      <Line points={head} closed fill={style.color} />
+    </>
+  )
 }
 
 interface ShapeViewProps {
@@ -72,27 +115,7 @@ export function ShapeView({ shape, interactive, onSelect, onMoved, onEditText }:
       {shape.type === 'free' ? (
         <Line points={flat(shape.points)} lineCap="round" lineJoin="round" {...strokeProps(s)} />
       ) : null}
-      {shape.type === 'arrow' ? (
-        <>
-          <Line points={flat([shape.from, shape.to])} lineCap="butt" {...strokeProps(s)} />
-          <Head from={shape.from} to={shape.to} style={s} />
-        </>
-      ) : null}
-      {shape.type === 'curve' ? (
-        <>
-          <Shape
-            {...strokeProps(s)}
-            lineCap="butt"
-            sceneFunc={(ctx, node) => {
-              ctx.beginPath()
-              ctx.moveTo(shape.from.x, shape.from.y)
-              ctx.quadraticCurveTo(shape.control.x, shape.control.y, shape.to.x, shape.to.y)
-              ctx.strokeShape(node)
-            }}
-          />
-          <Head from={shape.control} to={shape.to} style={s} />
-        </>
-      ) : null}
+      {shape.type === 'arrow' || shape.type === 'curve' ? <ArrowView shape={shape} /> : null}
       {shape.type === 'rect' ? (
         <Rect
           x={shape.x}

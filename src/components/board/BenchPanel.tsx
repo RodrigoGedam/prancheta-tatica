@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { BookmarkPlusIcon, EyeIcon, EyeOffIcon, RotateCcwIcon } from 'lucide-react'
+import { ArrowDownToLineIcon, BookmarkPlusIcon, EyeIcon, EyeOffIcon, RotateCcwIcon } from 'lucide-react'
 import { tokenMark } from '@/lib/board/placement'
 import { textColorOn } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 import { useBoardStore } from '@/stores/boardStore'
 import { useToolStore } from '@/stores/toolStore'
-import { BENCH_DRAG_MIME, serializeBenchDrag } from './benchDrag'
+import { BENCH_DRAG_MIME, serializeBenchDrag, useBenchDropStore } from './benchDrag'
 import { SaveFormationDialog } from './SaveFormationDialog'
 import { SIDE_LABEL, useSideActions, type SideModel } from './useBoardModel'
 
@@ -32,7 +32,9 @@ const iconButton =
 function BenchSection({ model }: { model: SideModel }) {
   // Jogadores só se movem com a ferramenta Selecionar (spec §6).
   const selecting = useToolStore((s) => s.tool === 'select')
-  const { side, team, bench, state } = model
+  const { side, team } = model
+  const dropping = useBenchDropStore((s) => s.target === side) && team !== undefined
+  const { bench, state } = model
   const actions = useSideActions(model)
   const toggleHidden = useBoardStore((s) => s.toggleHidden)
   const [saving, setSaving] = useState(false)
@@ -41,8 +43,20 @@ function BenchSection({ model }: { model: SideModel }) {
     <section
       data-bench-side={side}
       aria-label={`Banco do ${SIDE_LABEL[side].toLowerCase()}`}
-      className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface-2 p-3.5"
+      className={cn(
+        'relative flex flex-col gap-2.5 rounded-xl border bg-surface-2 p-3.5 transition-colors',
+        dropping ? 'border-accent ring-2 ring-accent/40' : 'border-line',
+      )}
     >
+      {dropping ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 rounded-xl bg-[#0F1418]/80 text-accent"
+        >
+          <ArrowDownToLineIcon size={26} />
+          <span className="font-display text-lg font-bold">Solte para voltar ao banco</span>
+        </div>
+      ) : null}
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ background: team ? model.color : '#3a4652' }} />
         <div className="flex min-w-0 flex-1 flex-col">

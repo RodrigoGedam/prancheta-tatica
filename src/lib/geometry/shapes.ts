@@ -16,6 +16,14 @@ export type StrokeWidth = 'thin' | 'medium' | 'thick'
 /** Espessura do traço em metros. */
 export const STROKE_WIDTH_M: Record<StrokeWidth, number> = { thin: 0.25, medium: 0.4, thick: 0.6 }
 
+/** Espessura (m) das flechas, mais grossas que os outros traços: a fina já equivale à grossa geral. */
+export const ARROW_STROKE_WIDTH_M: Record<StrokeWidth, number> = { thin: 0.6, medium: 0.9, thick: 1.2 }
+
+/** Espessura (m) do traço de um desenho, considerando o tipo. */
+export function strokeWidthOf(shape: Pick<DrawShape, 'type' | 'style'>): number {
+  return shape.type === 'arrow' || shape.type === 'curve' ? ARROW_STROKE_WIDTH_M[shape.style.width] : STROKE_WIDTH_M[shape.style.width]
+}
+
 /** Opacidade do preenchimento de retângulo e círculo. */
 export const FILL_OPACITY = 0.2
 
@@ -77,9 +85,38 @@ function curvePoint(s: CurveShape, t: number): Point {
   return { x: u * u * s.from.x + 2 * u * t * s.control.x + t * t * s.to.x,
     y: u * u * s.from.y + 2 * u * t * s.control.y + t * t * s.to.y }
 }
-export function arrowHeadSize(style: ShapeStyle): number { return 3 * STROKE_WIDTH_M[style.width] + 0.8 }
+/** Comprimento (m) da ponta da flecha. */
+export function arrowHeadSize(style: ShapeStyle): number { return 2.2 * ARROW_STROKE_WIDTH_M[style.width] + 1.2 }
+
+/**
+ * Corpo da flecha encurtado até o meio da ponta, para o traço grosso não vazar pela ponta fina.
+ * Na curva, devolve o trecho inicial da quadrática (de Casteljau) que termina a `trim` metros do fim.
+ */
+export function arrowShaft(shape: ArrowShape | CurveShape): { from: Point; control?: Point; to: Point } {
+  const trim = arrowHeadSize(shape.style) * 0.5
+  if (shape.type === 'arrow') {
+    const length = distance(shape.from, shape.to)
+    const k = length === 0 ? 0 : Math.max(0, length - trim) / length
+    return { from: { ...shape.from }, to: { x: shape.from.x + (shape.to.x - shape.from.x) * k, y: shape.from.y + (shape.to.y - shape.from.y) * k } }
+  }
+  // Anda do fim da curva para trás até acumular `trim` de comprimento.
+  const steps = 64
+  let walked = 0
+  let t = 0
+  for (let i = steps; i > 0; i--) {
+    const segment = distance(curvePoint(shape, i / steps), curvePoint(shape, (i - 1) / steps))
+    if (walked + segment >= trim) {
+      // Interpola dentro do segmento: um passo pode ser maior que a ponta inteira.
+      t = (i - (segment === 0 ? 0 : (trim - walked) / segment)) / steps
+      break
+    }
+    walked += segment
+  }
+  const lerp = (a: Point, b: Point): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })
+  return { from: { ...shape.from }, control: lerp(shape.from, shape.control), to: curvePoint(shape, t) }
+}
 export function hitTest(shape: DrawShape, point: Point, tolerance: number): boolean {
-  const tol = tolerance + STROKE_WIDTH_M[shape.style.width] / 2
+  const tol = tolerance + strokeWidthOf(shape) / 2
   switch (shape.type) {
     case 'free': return polylineHit(shape.points, point, tol)
     case 'arrow': return segmentDistance(point, shape.from, shape.to) <= tol || triangleHit(point, arrowHead(shape.from, shape.to, arrowHeadSize(shape.style)))

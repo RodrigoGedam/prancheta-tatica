@@ -1,6 +1,6 @@
 import { describe, it, expect, expectTypeOf } from 'vitest'
 import { z } from 'zod'
-import { drawShapeSchema, hitTest, arrowHead, arrowHeadSize, defaultControlPoint, simplifyPath, rectFromDrag, ellipseFromDrag, translateShape, shapeBounds, textBounds, isDegenerate, type DrawShape, type FreeShape, type ArrowShape, type CurveShape, type RectShape, type EllipseShape, type TextShape, type ShapeStyle } from './shapes'
+import { ARROW_STROKE_WIDTH_M, STROKE_WIDTH_M, arrowShaft, strokeWidthOf, drawShapeSchema, hitTest, arrowHead, arrowHeadSize, defaultControlPoint, simplifyPath, rectFromDrag, ellipseFromDrag, translateShape, shapeBounds, textBounds, isDegenerate, type DrawShape, type FreeShape, type ArrowShape, type CurveShape, type RectShape, type EllipseShape, type TextShape, type ShapeStyle } from './shapes'
 const style: ShapeStyle = { color: '#fff', width: 'thin', dashed: false }
 const base = { id: 'a', style }
 const from = { x: 0, y: 0 }, to = { x: 20, y: 0 }
@@ -83,7 +83,11 @@ it('desloca cada coordenada sem alterar a entrada', () => {
 })
 it('calcula caixas e o extremo real da curva', () => {
   expect(shapeBounds(shapes[2])).toEqual({ x: 0, y: -5, width: 20, height: 5 })
-  expect(shapeBounds(shapes[1])).toEqual({ x: 0, y: -.775, width: 20, height: 1.55 })
+  const head = arrowHeadSize(style), arrowBox = shapeBounds(shapes[1])
+  expect(arrowBox.x).toBe(0)
+  expect(arrowBox.width).toBe(20)
+  expect(arrowBox.y).toBeCloseTo(-head / 2)
+  expect(arrowBox.height).toBeCloseTo(head)
   expect(shapeBounds(shapes[0])).toEqual({ x: 0, y: 0, width: 20, height: 0 })
   expect(shapeBounds(shapes[3])).toEqual({ x: 0, y: 0, width: 20, height: 10 })
   expect(shapeBounds(shapes[4])).toEqual({ x: 0, y: -5, width: 20, height: 10 })
@@ -96,4 +100,41 @@ it('respeita os limites de degeneracao', () => {
   const invalid = [{ ...shapes[0], points: [from, { x: .49, y: 0 }] }, { ...shapes[1], to: { x: .99, y: 0 } }, { ...shapes[2], to: { x: .99, y: 0 } }, { ...shapes[3], height: .49 }, { ...shapes[4], ry: .24 }, { ...shapes[5], text: ' \n ' }]
   valid.forEach(s => expect(isDegenerate(s)).toBe(false))
   invalid.forEach(s => expect(isDegenerate(s)).toBe(true))
+})
+
+describe('flechas grossas', () => {
+  const style: ShapeStyle = { color: '#FFFFFF', width: 'thin', dashed: false }
+  it('a espessura fina das flechas equivale à grossa geral', () => {
+    expect(ARROW_STROKE_WIDTH_M.thin).toBe(STROKE_WIDTH_M.thick)
+    expect(strokeWidthOf({ type: 'arrow', style })).toBe(ARROW_STROKE_WIDTH_M.thin)
+    expect(strokeWidthOf({ type: 'free', style })).toBe(STROKE_WIDTH_M.thin)
+  })
+  it('o corpo da flecha reta termina no meio da ponta', () => {
+    const shape: ArrowShape = { id: 'a', type: 'arrow', style, from: { x: 0, y: 0 }, to: { x: 20, y: 0 } }
+    const shaft = arrowShaft(shape)
+    expect(shaft.from).toEqual({ x: 0, y: 0 })
+    expect(shaft.to.x).toBeCloseTo(20 - arrowHeadSize(style) / 2)
+    expect(shaft.to.y).toBe(0)
+  })
+  it('flecha mais curta que a ponta não inverte o corpo', () => {
+    const shape: ArrowShape = { id: 'a', type: 'arrow', style, from: { x: 0, y: 0 }, to: { x: 1, y: 0 } }
+    expect(arrowShaft(shape).to).toEqual({ x: 0, y: 0 })
+  })
+  it('o corpo da curva é o trecho inicial da mesma quadrática', () => {
+    const shape: CurveShape = { id: 'c', type: 'curve', style, from: { x: 0, y: 0 }, to: { x: 20, y: 0 }, control: { x: 10, y: -10 } }
+    const shaft = arrowShaft(shape)
+    expect(shaft.from).toEqual(shape.from)
+    const gap = Math.hypot(shaft.to.x - shape.to.x, shaft.to.y - shape.to.y)
+    expect(gap).toBeGreaterThan(arrowHeadSize(style) * 0.4)
+    expect(gap).toBeLessThan(arrowHeadSize(style) * 0.6)
+    // O ponto final do trecho está sobre a curva original.
+    expect(hitTest({ ...shape, style: { ...style } }, shaft.to, 0.05)).toBe(true)
+    expect(shaft.control!.x).toBeLessThan(shape.control.x)
+  })
+  it('o corpo da curva encosta na ponta mesmo com o controle longe', () => {
+    const shape: CurveShape = { id: 'c', type: 'curve', style, from: { x: 34, y: 80 }, to: { x: 68, y: 100 }, control: { x: 0, y: 0 } }
+    const shaft = arrowShaft(shape)
+    const gap = Math.hypot(shaft.to.x - shape.to.x, shaft.to.y - shape.to.y)
+    expect(gap).toBeCloseTo(arrowHeadSize(style) * 0.5, 1)
+  })
 })

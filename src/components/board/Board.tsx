@@ -12,7 +12,7 @@ import { PitchMarkings } from './PitchMarkings'
 import { PlayerToken } from './PlayerToken'
 import { PlayerTooltip } from './PlayerTooltip'
 import { TextEditor } from './TextEditor'
-import { BENCH_DRAG_MIME, benchSideAt, parseBenchDrag } from './benchDrag'
+import { BENCH_DRAG_MIME, benchSideAt, parseBenchDrag, useBenchDropStore } from './benchDrag'
 import { dropPlayer, type PlacedPlayer, type SideModel } from './useBoardModel'
 
 /** Tolerância (m) para fora das linhas ainda contar como "no campo" ao soltar. */
@@ -55,9 +55,19 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
     [tokens],
   )
 
+  /** Sobre o banco do próprio time: destaca o banco e deixa o token translúcido (soltar ali tira do campo). */
+  function handleDragMove(item: TokenItem, e: KonvaEventObject<globalThis.DragEvent>) {
+    const evt = e.evt as unknown as MouseEvent
+    const over = benchSideAt(evt.clientX, evt.clientY) === item.side
+    useBenchDropStore.getState().setTarget(over ? item.side : null)
+    e.target.opacity(over ? 0.45 : 1)
+  }
+
   function handleDragEnd(item: TokenItem, e: KonvaEventObject<globalThis.DragEvent>) {
     setDragging(false)
+    useBenchDropStore.getState().setTarget(null)
     const node = e.target
+    node.opacity(1)
     const point = { x: node.x(), y: node.y() }
     const evt = e.evt as unknown as MouseEvent
     const benchSide = benchSideAt(evt.clientX, evt.clientY)
@@ -138,6 +148,7 @@ export function Board({ sides }: { sides: readonly SideModel[] }) {
                         setDragging(true)
                         setHovered(null)
                       }}
+                      onDragMove={(e) => handleDragMove(t, e)}
                       onDragEnd={(e) => handleDragEnd(t, e)}
                       onHover={(on) => setHovered(on ? t : null)}
                     />

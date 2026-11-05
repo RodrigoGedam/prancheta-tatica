@@ -18,6 +18,7 @@ interface PlayerTokenProps {
   showBadge: boolean
   draggable: boolean
   onDragStart: () => void
+  onDragMove: (e: KonvaEventObject<DragEvent>) => void
   onDragEnd: (e: KonvaEventObject<DragEvent>) => void
   onHover: (hovering: boolean) => void
 }
@@ -32,6 +33,7 @@ export function PlayerToken({
   showBadge,
   draggable,
   onDragStart,
+  onDragMove,
   onDragEnd,
   onHover,
 }: PlayerTokenProps) {
@@ -48,6 +50,7 @@ export function PlayerToken({
         e.target.moveToTop()
         onDragStart()
       }}
+      onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       onMouseEnter={(e) => {
         onHover(true)
