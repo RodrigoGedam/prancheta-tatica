@@ -10,18 +10,9 @@ const ALTERNATIVES = [...TEAM_COLORS.map((c) => c.hex), '#0EA5E9', '#DB2777', '#
 /** Faixa acima do campo quando as cores dos dois times se confundem. A alternativa vale só na prancheta. */
 export function ColorWarning({ home, away }: { home: SideModel; away: SideModel }) {
   const setColorOverride = useBoardStore((s) => s.setColorOverride)
-  if (!home.team || !away.team) return null
-
-  if (away.state.colorOverride) {
-    return (
-      <Strip>
-        <span className="flex-1">
-          <strong>{away.team.name}</strong> está com cor alternativa nesta prancheta.
-        </span>
-        <StripButton onClick={() => setColorOverride('away', null)}>Restaurar cor original</StripButton>
-      </Strip>
-    )
-  }
+  // Com a cor alternativa aplicada, a faixa some (pedido do Rodrigo: não ocupar espaço).
+  // A cor original volta ao trocar o time do visitante.
+  if (!home.team || !away.team || away.state.colorOverride) return null
 
   if (!areColorsSimilar(home.team.color, away.team.color)) return null
   const alternative = pickAlternativeColor(

@@ -18,7 +18,7 @@ export function BoardHeaderControls() {
   const home = useSideModel('home')
   const [managing, setManaging] = useState(false)
   return (
-    <div className="flex flex-1 flex-wrap items-center justify-center gap-3.5">
+    <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-3">
       <SideControls model={away} otherTeamId={home.state.teamId} onManage={() => setManaging(true)} />
       <span aria-hidden="true" className="font-display text-lg text-faint">
         ×
@@ -46,14 +46,14 @@ function SideControls({
   const id = `team-${side}`
 
   return (
-    <div className="flex items-center gap-2">
-      <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: model.team ? model.color : '#3a4652' }} />
-      <label htmlFor={id} className="text-xs tracking-[0.08em] text-muted uppercase">
+    <div className="flex shrink-0 items-center gap-1.5">
+      <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ background: model.team ? model.color : '#3a4652' }} />
+      <label htmlFor={id} className="text-[11px] tracking-[0.06em] text-muted uppercase">
         {SIDE_LABEL[side]}
       </label>
       <select
         id={id}
-        className={`${selectClass} max-w-[190px] font-semibold`}
+        className={`${selectClass} w-[150px] truncate font-semibold`}
         value={model.state.teamId ?? ''}
         onChange={(e) => setTeam(side, e.target.value || null)}
         disabled={!teams.isSuccess}
@@ -68,7 +68,8 @@ function SideControls({
       </select>
       <select
         aria-label={`Formação do ${SIDE_LABEL[side].toLowerCase()}`}
-        className={selectClass}
+        // Largura fixa: sem ela o navegador dimensiona pela opção mais longa ("Gerenciar formações…").
+        className={`${selectClass} w-[96px] truncate`}
         value={model.formation.id}
         onChange={(e) => {
           if (e.target.value === MANAGE) onManage()
