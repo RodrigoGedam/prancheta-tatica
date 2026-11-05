@@ -1,4 +1,5 @@
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
+import { Link, Outlet, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { BoardHeaderControls, BoardImportButton } from '@/components/board/BoardHeaderControls'
 
 export const Route = createRootRoute({ component: RootLayout })
 
@@ -7,6 +8,7 @@ const navLink =
 const navLinkActive = 'bg-control font-semibold text-ink'
 
 function RootLayout() {
+  const onBoard = useRouterState({ select: (s) => s.location.pathname === '/' })
   return (
     <div className="flex h-full min-h-0 flex-col">
       <header className="flex h-14 shrink-0 items-center gap-6 border-b border-line bg-surface px-5">
@@ -14,8 +16,7 @@ function RootLayout() {
           <Logo />
           <span className="font-display text-2xl font-bold tracking-wider">CAMPINHO</span>
         </Link>
-        {/* Seletores de time e formação entram aqui na etapa 3. */}
-        <div className="flex-1" />
+        {onBoard ? <BoardHeaderControls /> : <div className="flex-1" />}
         <nav className="flex items-center gap-1.5" aria-label="Principal">
           <Link to="/" className={navLink} activeProps={{ className: navLinkActive }} activeOptions={{ exact: true }}>
             Prancheta
@@ -23,6 +24,7 @@ function RootLayout() {
           <Link to="/times" className={navLink} activeProps={{ className: navLinkActive }}>
             Times
           </Link>
+          {onBoard ? <BoardImportButton /> : null}
         </nav>
       </header>
       <Outlet />

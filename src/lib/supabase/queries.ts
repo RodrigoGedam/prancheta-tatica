@@ -2,11 +2,14 @@ import type { PostgrestError } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { getSupabase } from './client'
 import {
+  formationRowSchema,
   importPlayerSchema,
   playerInputSchema,
   playerRowSchema,
   teamInputSchema,
   teamRowSchema,
+  type FormationRow,
+  type FormationSlot,
   type ImportPlayer,
   type PlayerInput,
   type PlayerRow,
@@ -26,7 +29,7 @@ const teamWithCountSchema = teamRowSchema.extend({
 export class DataError extends Error {}
 
 function toDataError(error: PostgrestError): DataError {
-  if (error.code === '23505') return new DataError('Já existe um time com esse nome.')
+  if (error.code === '23505') return new DataError('Já existe um registro com esse nome.')
   if (error.code === '23514') return new DataError('Algum valor está fora do formato aceito.')
   return new DataError(`Erro ao falar com o Supabase: ${error.message}`)
 }
@@ -104,4 +107,27 @@ export async function importTeam(input: TeamInput, players: ImportPlayer[]): Pro
     await getSupabase().rpc('import_team', { p_name: team.name, p_color: team.color, p_players: payload }),
   )
   return z.uuid().parse(data)
+}
+
+export async function fetchFormations(): Promise<FormationRow[]> {
+  const data: unknown = check(await getSupabase().from('formations').select('*').order('name', { ascending: true }))
+  return z.array(formationRowSchema).parse(data)
+}
+
+export async function createFormation(name: string, slots: FormationSlot[]): Promise<FormationRow> {
+  const data: unknown = check(
+    await getSupabase().from('formations').insert({ name: name.trim(), slots }).select().single(),
+  )
+  return formationRowSchema.parse(data)
+}
+
+export async function renameFormation(id: string, name: string): Promise<FormationRow> {
+  const data: unknown = check(
+    await getSupabase().from('formations').update({ name: name.trim() }).eq('id', id).select().single(),
+  )
+  return formationRowSchema.parse(data)
+}
+
+export async function deleteFormation(id: string): Promise<void> {
+  check(await getSupabase().from('formations').delete().eq('id', id))
 }

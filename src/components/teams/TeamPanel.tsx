@@ -3,6 +3,7 @@ import { PencilIcon, PlusIcon, Trash2Icon, UploadIcon } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useDeletePlayer, useDeleteTeam, usePlayers } from '@/hooks/useTeamData'
+import { lighten } from '@/lib/colors'
 import { POSITIONS } from '@/lib/positions'
 import type { TeamSummary } from '@/lib/supabase/queries'
 import type { PlayerRow } from '@/lib/supabase/schemas'
@@ -15,14 +16,6 @@ interface TeamPanelProps {
   onEditTeam: () => void
   onReimport: () => void
   onDeleted: () => void
-}
-
-/** Clareia a cor do time para o número na tabela ficar legível no fundo escuro. */
-function tint(hex: string, amount = 0.55): string {
-  const n = Number.parseInt(hex.slice(1), 16)
-  const mix = (c: number) => Math.round(c + (255 - c) * amount)
-  const [r, g, b] = [mix((n >> 16) & 255), mix((n >> 8) & 255), mix(n & 255)]
-  return `rgb(${r} ${g} ${b})`
 }
 
 function normalizeSearch(value: string): string {
@@ -144,7 +137,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
       ) : (
         <PlayersTable
           players={visible}
-          numberColor={tint(team.color)}
+          numberColor={lighten(team.color)}
           onEdit={(player) => setEditing({ player })}
           onDelete={(player) => {
             deletePlayer.reset()
