@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+/* Tokens do design aprovado (tema escuro, destaque verde-limão). */
+@theme {
+  --font-sans: 'Barlow', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
+
+  --color-ground: #0f1418;
+  --color-surface: #151b21;
+  --color-surface-2: #1a2129;
+  --color-control: #1e262e;
+  --color-line: #26303a;
+  --color-line-strong: #2e3944;
+  --color-ink: #e8edf1;
+  --color-ink-soft: #c5cfd8;
+  --color-muted: #93a1ae;
+  --color-faint: #5e6b77;
+  --color-accent: #b8f23c;
+  --color-accent-hover: #d4ff7a;
+  --color-on-accent: #0f1418;
+  --color-warning: #facc15;
+  --color-danger: #f59e9e;
+
+  --color-pitch: #2e7a46;
+  --color-pitch-stripe: #2a713f;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
