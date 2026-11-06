@@ -1,5 +1,5 @@
 /**
- * Carrega os times padrão de data/serie-a-2026 no Supabase pela função import_team.
+ * Usa a chave secreta para gravar só times padrão via import_system_team no Supabase.
  * Uso: pnpm squads:seed [--apply] [--force]
  * Sem --apply apenas simula. Time já existente é pulado, salvo com --force (substitui elenco e cor).
  * Valida todos os clubes antes de gravar: qualquer problema cancela a carga inteira.
@@ -13,7 +13,7 @@ import { csvPath, readClubs, readManifest, type Club } from './squad-data'
 
 const envSchema = z.object({
   VITE_SUPABASE_URL: z.url(),
-  VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  SUPABASE_SECRET_KEY: z.string().trim().min(1),
 })
 
 interface ValidatedClub {
@@ -79,11 +79,17 @@ async function main(): Promise<void> {
     return
   }
 
-  const env = envSchema.parse(process.env)
-  const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY, {
+  const result = envSchema.safeParse(process.env)
+  if (!result.success) {
+    console.error('Configure VITE_SUPABASE_URL com uma URL válida e SUPABASE_SECRET_KEY com a chave secreta no arquivo .env.local.')
+    process.exitCode = 1
+    return
+  }
+  const env = result.data
+  const supabase = createClient(env.VITE_SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
-  const { data, error } = await supabase.from('teams').select('name')
+  const { data, error } = await supabase.from('teams').select('name').is('user_id', null)
   if (error) throw new Error(`Erro ao ler os times: ${error.message}`)
   const existingNames = z.array(z.object({ name: z.string() })).parse(data).map((team) => team.name)
   const existing = new Set(existingNames.map((name) => name.toLowerCase()))
@@ -101,7 +107,7 @@ async function main(): Promise<void> {
     console.log(`${prefix}${club.name}: ${verb}, ${players.length} jogadores${details}`)
     if (!apply) continue
     const team = teamInputSchema.parse({ name: club.name, color: club.color })
-    const { error: importError } = await supabase.rpc('import_team', {
+    const { error: importError } = await supabase.rpc('import_system_team', {
       p_name: team.name,
       p_color: team.color,
       p_players: players,
