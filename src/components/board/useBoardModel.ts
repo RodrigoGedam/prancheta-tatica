@@ -5,6 +5,7 @@ import { initialPlacements, reformPlacements, snapTarget, type Placement } from 
 import { contrastColor } from '@/lib/colors'
 import type { FormationDef } from '@/lib/formations'
 import type { Point, Side } from '@/lib/geometry/pitch'
+import { sortByPosition } from '@/lib/players/sort'
 import type { TeamSummary } from '@/lib/supabase/queries'
 import type { FormationSlot, PlayerRow } from '@/lib/supabase/schemas'
 import {
@@ -70,7 +71,7 @@ export function useSideModel(side: Side): SideModel {
       goalkeeperColor: contrastColor(color),
       formation: catalog.resolve(state.formationId),
       onPitch,
-      bench: list.filter((p) => !placedIds.has(p.id)),
+      bench: sortByPosition(list.filter((p) => !placedIds.has(p.id))),
     }
   }, [side, state, hidden, teams.data, players.data, players.isSuccess, catalog])
 }

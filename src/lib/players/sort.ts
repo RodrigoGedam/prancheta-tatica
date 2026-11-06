@@ -53,6 +53,16 @@ function comparePrimary(a: SortablePlayer, b: SortablePlayer, sort: PlayerSort):
   return direction * compareNumbers(a.number, b.number)
 }
 
+/** Ordem do banco da prancheta: só posição, depois número e nome, sem separar titulares. */
+export function sortByPosition<P extends Pick<SortablePlayer, 'name' | 'number' | 'position'>>(players: readonly P[]): P[] {
+  return [...players].sort(
+    (a, b) =>
+      comparePositions(a.position, b.position) ||
+      compareNumbers(a.number, b.number) ||
+      compareNames(a.name, b.name),
+  )
+}
+
 /** Titulares sempre primeiro; dentro de cada grupo vale a coluna escolhida. Desempata por número e nome. */
 export function sortPlayers<P extends SortablePlayer>(players: readonly P[], sort: PlayerSort): P[] {
   return [...players].sort(

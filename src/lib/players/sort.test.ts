@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_PLAYER_SORT, comparePositions, sortPlayers, togglePlayerSort, type SortablePlayer } from './sort'
+import { DEFAULT_PLAYER_SORT, comparePositions, sortByPosition, sortPlayers, togglePlayerSort, type SortablePlayer } from './sort'
 
 const player = (name: string, number: number | null, position: string, is_starter: boolean): SortablePlayer => ({
   name,
@@ -46,6 +46,17 @@ describe('sortPlayers', () => {
     const copy = [...squad]
     sortPlayers(squad, DEFAULT_PLAYER_SORT)
     expect(squad).toEqual(copy)
+  })
+})
+
+describe('sortByPosition', () => {
+  it('ordena só por posição e número, sem separar titulares', () => {
+    expect(names(sortByPosition(squad))).toEqual(['Éder', 'Ana', 'Bruno', 'Ênio', 'Davi', 'Zé', 'Caio'])
+  })
+  it('deixa jogador sem número por último na posição e não altera a lista recebida', () => {
+    const list = [player('A', null, 'ZAG', false), player('B', 3, 'ZAG', false)]
+    expect(names(sortByPosition(list))).toEqual(['B', 'A'])
+    expect(names(list)).toEqual(['A', 'B'])
   })
 })
 
