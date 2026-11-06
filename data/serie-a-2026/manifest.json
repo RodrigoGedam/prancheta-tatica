@@ -1,0 +1,102 @@
+{
+  "athletico-pr": {
+    "sourceDate": "2026-09-22",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "atletico-mg": {
+    "sourceDate": "2026-09-13",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "bahia": {
+    "sourceDate": "2026-09-22",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "botafogo": {
+    "sourceDate": "2026-09-09",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "chapecoense": {
+    "sourceDate": "2026-10-13",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "corinthians": {
+    "sourceDate": "2026-10-11",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "coritiba": {
+    "sourceDate": "2026-09-27",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "cruzeiro": {
+    "sourceDate": "2026-09-13",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "flamengo": {
+    "sourceDate": "2026-09-20",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "fluminense": {
+    "sourceDate": "2026-09-14",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "gremio": {
+    "sourceDate": "2026-09-13",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "internacional": {
+    "sourceDate": "2026-09-09",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "mirassol": {
+    "sourceDate": "2026-09-22",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "palmeiras": {
+    "sourceDate": "2026-09-01",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "red-bull-bragantino": {
+    "sourceDate": "2026-09-22",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "remo": {
+    "sourceDate": "2026-10-01",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "santos": {
+    "sourceDate": "2026-10-01",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "sao-paulo": {
+    "sourceDate": "2026-09-12",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "vasco": {
+    "sourceDate": "2026-09-11",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  },
+  "vitoria": {
+    "sourceDate": "2026-09-22",
+    "fetchedAt": "2026-11-06",
+    "reviewed": true
+  }
+}

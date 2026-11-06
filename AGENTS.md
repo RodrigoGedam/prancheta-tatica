@@ -54,7 +54,10 @@ src/
   lib/colors/          # contraste do goleiro, cores parecidas (puro)
   lib/persistence/     # schema e versionamento do localStorage (puro)
   lib/supabase/        # client e queries
+  lib/squads/           # elenco da Wikipédia: parser, titulares e CSV (puro)
 supabase/migrations/   # SQL
+data/serie-a-2026/     # times padrão: CSVs revisados, clubs.json, manifest.json
+scripts/               # coleta (squads:fetch) e carga (squads:seed) dos times padrão
 docs/
 ```
 

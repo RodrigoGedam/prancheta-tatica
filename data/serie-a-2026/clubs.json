@@ -1,0 +1,22 @@
+[
+  { "slug": "athletico-pr", "name": "Athletico-PR", "color": "#C8102E", "wiki": null },
+  { "slug": "atletico-mg", "name": "Atlético-MG", "color": "#1A1A1A", "wiki": null },
+  { "slug": "bahia", "name": "Bahia", "color": "#0055A4", "wiki": null },
+  { "slug": "botafogo", "name": "Botafogo", "color": "#1A1A1A", "wiki": { "page": "Botafogo de Futebol e Regatas", "sectionId": "Elenco_atual" } },
+  { "slug": "chapecoense", "name": "Chapecoense", "color": "#00843D", "wiki": { "page": "Associação Chapecoense de Futebol", "sectionId": "Elenco_atual" } },
+  { "slug": "corinthians", "name": "Corinthians", "color": "#1A1A1A", "wiki": { "page": "Sport Club Corinthians Paulista", "sectionId": "Elenco_atual" } },
+  { "slug": "coritiba", "name": "Coritiba", "color": "#00553A", "wiki": null },
+  { "slug": "cruzeiro", "name": "Cruzeiro", "color": "#003DA5", "wiki": { "page": "Cruzeiro Esporte Clube", "sectionId": "Jogadores" } },
+  { "slug": "flamengo", "name": "Flamengo", "color": "#C8102E", "wiki": { "page": "Clube de Regatas do Flamengo", "sectionId": "Elenco_atual" } },
+  { "slug": "fluminense", "name": "Fluminense", "color": "#7A0026", "wiki": { "page": "Fluminense Football Club", "sectionId": "Elenco_atual" } },
+  { "slug": "gremio", "name": "Grêmio", "color": "#0D80BF", "wiki": { "page": "Grêmio Foot-Ball Porto Alegrense", "sectionId": "Elenco_atual" } },
+  { "slug": "internacional", "name": "Internacional", "color": "#E30613", "wiki": { "page": "Sport Club Internacional", "sectionId": "Elenco_atual" } },
+  { "slug": "mirassol", "name": "Mirassol", "color": "#F5C400", "wiki": null },
+  { "slug": "palmeiras", "name": "Palmeiras", "color": "#006437", "wiki": { "page": "Sociedade Esportiva Palmeiras", "sectionId": "Elenco_atual" } },
+  { "slug": "red-bull-bragantino", "name": "Red Bull Bragantino", "color": "#D6001C", "wiki": null },
+  { "slug": "remo", "name": "Remo", "color": "#0B1F5B", "wiki": null },
+  { "slug": "santos", "name": "Santos", "color": "#F2F2F2", "wiki": { "page": "Santos Futebol Clube", "sectionId": "Elenco_atual" } },
+  { "slug": "sao-paulo", "name": "São Paulo", "color": "#D50000", "wiki": { "page": "São Paulo Futebol Clube", "sectionId": "Elenco_masculino" } },
+  { "slug": "vasco", "name": "Vasco", "color": "#1A1A1A", "wiki": null },
+  { "slug": "vitoria", "name": "Vitória", "color": "#CC0000", "wiki": null }
+]

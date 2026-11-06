@@ -20,6 +20,12 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 - Anon key + RLS permissiva, sem Auth.
 - A prancheta atual fica no `localStorage` (não existe tabela de pranchetas).
 
+### Times padrão
+
+- Os 20 clubes da Série A 2026 já vêm no banco, carregados de `data/serie-a-2026/` por `pnpm squads:seed`.
+- São editáveis e excluíveis como qualquer time. Importar um CSV com o mesmo nome substitui o elenco, com a confirmação de sempre.
+- Repetir a carga não altera times que já existem, salvo com `--force`.
+
 ## 3. Rotas
 
 - `/`: prancheta.
