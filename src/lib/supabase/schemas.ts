@@ -7,7 +7,7 @@ const color = z.string().regex(HEX_COLOR_REGEX, 'Cor inválida.')
 const number = z.number({ error: 'Número deve ser de 0 a 99.' }).int('Número deve ser de 0 a 99.').min(0, 'Número deve ser de 0 a 99.').max(99, 'Número deve ser de 0 a 99.').nullable()
 
 export const teamRowSchema = z.object({
-  id: z.uuid(), name: z.string().min(1).max(40), color, default_formation: z.string().min(1).max(40),
+  id: z.uuid(), user_id: z.uuid().nullable(), name: z.string().min(1).max(40), color, default_formation: z.string().min(1).max(40),
   created_at: z.string(), updated_at: z.string(),
 })
 export const playerRowSchema = z.object({

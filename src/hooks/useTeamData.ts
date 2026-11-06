@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  copyTeam,
   createPlayer,
   createTeam,
   deletePlayer,
@@ -54,6 +55,14 @@ export function useDeleteTeam() {
       qc.removeQueries({ queryKey: teamKeys.players(id) })
       return qc.invalidateQueries({ queryKey: teamKeys.all })
     },
+  })
+}
+
+export function useCopyTeam() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => copyTeam(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: teamKeys.all }),
   })
 }
 

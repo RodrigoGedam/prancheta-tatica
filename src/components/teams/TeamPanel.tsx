@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
-import { PencilIcon, PlusIcon, Trash2Icon, UploadIcon } from 'lucide-react'
+import { CopyIcon, PencilIcon, PlusIcon, Trash2Icon, UploadIcon } from 'lucide-react'
+import { SignInButton } from '@/components/AuthMenu'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { useFormationCatalog } from '@/hooks/useFormations'
-import { useDeletePlayer, useDeleteTeam, usePlayers } from '@/hooks/useTeamData'
+import { useCopyTeam, useDeletePlayer, useDeleteTeam, usePlayers } from '@/hooks/useTeamData'
 import { lighten } from '@/lib/colors'
 import { POSITIONS } from '@/lib/positions'
 import type { TeamSummary } from '@/lib/supabase/queries'
 import type { PlayerRow } from '@/lib/supabase/schemas'
+import { isDefaultTeam } from '@/lib/teams/ownership'
+import { useAuthStore } from '@/stores/authStore'
 import { PlayerFormDialog } from './PlayerFormDialog'
 import { PlayersTable } from './PlayersTable'
 import { TeamDot, formatDate, inputClass } from './shared'
@@ -17,17 +20,21 @@ interface TeamPanelProps {
   onEditTeam: () => void
   onReimport: () => void
   onDeleted: () => void
+  onCopied: (copyId: string) => void
 }
 
 function normalizeSearch(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim()
 }
 
-export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanelProps) {
+export function TeamPanel({ team, onEditTeam, onReimport, onDeleted, onCopied }: TeamPanelProps) {
   const players = usePlayers(team.id)
   const deleteTeam = useDeleteTeam()
   const deletePlayer = useDeletePlayer(team.id)
   const catalog = useFormationCatalog()
+  const copy = useCopyTeam()
+  const signedIn = useAuthStore((s) => s.user !== null)
+  const readOnly = isDefaultTeam(team)
 
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState('')
@@ -70,27 +77,50 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
             {starters === 1 ? 'titular' : 'titulares'} · formação padrão {catalog.resolve(team.default_formation).name} · atualizado em {formatDate(team.updated_at)}
           </span>
         </div>
-        <Button variant="primary" onClick={onReimport}>
-          <UploadIcon size={16} aria-hidden="true" />
-          Reimportar CSV
-        </Button>
-        <Button onClick={onEditTeam}>
-          <PencilIcon size={15} aria-hidden="true" />
-          Editar time
-        </Button>
-        <Button
-          variant="danger"
-          size="icon"
-          aria-label="Excluir time"
-          title="Excluir time"
-          onClick={() => {
-            deleteTeam.reset()
-            setConfirmTeamDelete(true)
-          }}
-        >
-          <Trash2Icon size={17} aria-hidden="true" />
-        </Button>
+        {readOnly ? (
+          signedIn ? (
+            <Button
+              variant="primary"
+              disabled={copy.isPending}
+              onClick={() => copy.mutate(team.id, { onSuccess: onCopied })}
+            >
+              <CopyIcon size={16} aria-hidden="true" />
+              {copy.isPending ? 'Copiando…' : 'Copiar para Meus times'}
+            </Button>
+          ) : (
+            <SignInButton variant="primary" label="Entre para copiar" />
+          )
+        ) : (
+          <>
+            <Button variant="primary" onClick={onReimport}>
+              <UploadIcon size={16} aria-hidden="true" />
+              Reimportar CSV
+            </Button>
+            <Button onClick={onEditTeam}>
+              <PencilIcon size={15} aria-hidden="true" />
+              Editar time
+            </Button>
+            <Button
+              variant="danger"
+              size="icon"
+              aria-label="Excluir time"
+              title="Excluir time"
+              onClick={() => {
+                deleteTeam.reset()
+                setConfirmTeamDelete(true)
+              }}
+            >
+              <Trash2Icon size={17} aria-hidden="true" />
+            </Button>
+          </>
+        )}
       </div>
+
+      {copy.error ? (
+        <p role="alert" className="m-0 text-sm text-danger">
+          {copy.error.message}
+        </p>
+      ) : null}
 
       <div className="flex flex-wrap gap-2.5">
         <label htmlFor="player-search" className="sr-only">
@@ -120,10 +150,12 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
             </option>
           ))}
         </select>
-        <Button onClick={() => setEditing({ player: null })}>
-          <PlusIcon size={16} aria-hidden="true" />
-          Jogador
-        </Button>
+        {readOnly ? null : (
+          <Button onClick={() => setEditing({ player: null })}>
+            <PlusIcon size={16} aria-hidden="true" />
+            Jogador
+          </Button>
+        )}
       </div>
 
       {players.isPending ? (
@@ -133,7 +165,9 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
           {players.error.message}
         </p>
       ) : all.length === 0 ? (
-        <p className="m-0 text-sm text-muted">Nenhum jogador. Importe um CSV ou adicione jogadores.</p>
+        <p className="m-0 text-sm text-muted">
+          {readOnly ? 'Nenhum jogador.' : 'Nenhum jogador. Importe um CSV ou adicione jogadores.'}
+        </p>
       ) : visible.length === 0 ? (
         <p className="m-0 text-sm text-muted">Nenhum jogador encontrado com esses filtros.</p>
       ) : (
@@ -141,11 +175,17 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
           key={team.id}
           players={visible}
           numberColor={lighten(team.color)}
-          onEdit={(player) => setEditing({ player })}
-          onDelete={(player) => {
-            deletePlayer.reset()
-            setDeletingPlayer(player)
-          }}
+          actions={
+            readOnly
+              ? undefined
+              : {
+                  onEdit: (player) => setEditing({ player }),
+                  onDelete: (player) => {
+                    deletePlayer.reset()
+                    setDeletingPlayer(player)
+                  },
+                }
+          }
         />
       )}
 

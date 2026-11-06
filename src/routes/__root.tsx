@@ -1,4 +1,5 @@
 import { Link, Outlet, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { AuthMenu } from '@/components/AuthMenu'
 import { BoardHeaderControls } from '@/components/board/BoardHeaderControls'
 
 export const Route = createRootRoute({ component: RootLayout })
@@ -25,6 +26,7 @@ function RootLayout() {
             Times
           </Link>
         </nav>
+        <AuthMenu />
       </header>
       <Outlet />
     </div>

@@ -6,6 +6,7 @@ import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { useImportTeam, useTeams } from '@/hooks/useTeamData'
 import { decodeCsvBytes, parsePlayersCsv, type CsvEncoding, type CsvRow, type ParsedPlayersCsv } from '@/lib/csv'
 import { teamInputSchema, type ImportPlayer } from '@/lib/supabase/schemas'
+import { isDefaultTeam } from '@/lib/teams/ownership'
 import { cn } from '@/lib/utils'
 import { ColorPicker, FieldError, FormAlert, firstFreeColor, inputClass, labelClass } from './shared'
 
@@ -270,9 +271,10 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
   )
 }
 
-function findTeam<T extends { name: string }>(teams: readonly T[] | undefined, name: string): T | undefined {
+/** Só os times do usuário: importar com o nome de um time padrão cria um time próprio. */
+function findTeam<T extends { name: string; user_id: string | null }>(teams: readonly T[] | undefined, name: string): T | undefined {
   const key = name.trim().toLowerCase()
-  return key ? teams?.find((t) => t.name.toLowerCase() === key) : undefined
+  return key ? teams?.find((t) => !isDefaultTeam(t) && t.name.toLowerCase() === key) : undefined
 }
 
 const chipTones = {

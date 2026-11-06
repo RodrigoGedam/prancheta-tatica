@@ -211,6 +211,14 @@ export function endHistoryBatch() {
   })
 }
 
+/** Abandona o gesto em andamento: o estado guardado nele nunca volta para o histórico. */
+export function cancelHistoryBatch() {
+  if (!batch) return
+  const { wasTracking } = batch
+  batch = null
+  if (wasTracking) history().resume()
+}
+
 type SideRewrite = (side: SideState) => SideState
 
 /** Aplica `fn` aos dois lados; devolve o mesmo objeto se nada mudou. */

@@ -3,6 +3,7 @@ import { ArrowDownToLineIcon, BookmarkPlusIcon, EyeIcon, EyeOffIcon, RotateCcwIc
 import { tokenMark } from '@/lib/board/placement'
 import { textColorOn } from '@/lib/colors'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/authStore'
 import { useBoardStore } from '@/stores/boardStore'
 import { useToolStore } from '@/stores/toolStore'
 import { BENCH_DRAG_MIME, serializeBenchDrag, useBenchDropStore } from './benchDrag'
@@ -37,6 +38,7 @@ function BenchSection({ model }: { model: SideModel }) {
   const { bench } = model
   const actions = useSideActions(model)
   const toggleHidden = useBoardStore((s) => s.toggleHidden)
+  const signedIn = useAuthStore((s) => s.user !== null)
   const [saving, setSaving] = useState(false)
 
   return (
@@ -71,8 +73,8 @@ function BenchSection({ model }: { model: SideModel }) {
           type="button"
           className={iconButton}
           aria-label="Salvar posições como formação"
-          title="Salvar como formação"
-          disabled={!team}
+          title={signedIn ? 'Salvar como formação' : 'Entre na sua conta para salvar formações'}
+          disabled={!team || !signedIn}
           onClick={() => setSaving(true)}
         >
           <BookmarkPlusIcon size={17} aria-hidden="true" />

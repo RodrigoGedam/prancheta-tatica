@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { BoardColorButton } from './boardColors'
 import { useFormationCatalog } from '@/hooks/useFormations'
 import { useTeams } from '@/hooks/useTeamData'
+import type { TeamSummary } from '@/lib/supabase/queries'
+import { groupTeams } from '@/lib/teams/ownership'
+import { useAuthStore } from '@/stores/authStore'
 import { useBoardStore } from '@/stores/boardStore'
 import { ManageFormationsDialog } from './ManageFormationsDialog'
 import { ResetBoardButton } from './ResetBoardButton'
@@ -42,6 +45,8 @@ function SideControls({
   const catalog = useFormationCatalog()
   const actions = useSideActions(model)
   const setTeam = useBoardStore((s) => s.setTeam)
+  const signedIn = useAuthStore((s) => s.user !== null)
+  const { mine, defaults } = groupTeams(teams.data ?? [])
   const { side } = model
   const id = `team-${side}`
 
@@ -62,12 +67,18 @@ function SideControls({
         disabled={!teams.isSuccess}
       >
         <option value="">{teams.isPending ? 'Carregando…' : 'Escolha o time'}</option>
-        {(teams.data ?? []).map((t) => (
-          <option key={t.id} value={t.id} disabled={t.id === otherTeamId}>
-            {t.name}
-            {t.id === otherTeamId ? ' (no outro lado)' : ''}
-          </option>
-        ))}
+        {mine.length > 0 ? (
+          <optgroup label="Meus times">
+            {mine.map((t) => (
+              <TeamOption key={t.id} team={t} otherTeamId={otherTeamId} />
+            ))}
+          </optgroup>
+        ) : null}
+        <optgroup label="Série A 2026">
+          {defaults.map((t) => (
+            <TeamOption key={t.id} team={t} otherTeamId={otherTeamId} />
+          ))}
+        </optgroup>
       </select>
       <select
         aria-label={`Formação do ${SIDE_LABEL[side].toLowerCase()}`}
@@ -93,9 +104,19 @@ function SideControls({
             ))}
           </optgroup>
         ) : null}
-        <option value={MANAGE}>Gerenciar formações…</option>
+        {signedIn ? <option value={MANAGE}>Gerenciar formações…</option> : null}
       </select>
     </div>
+  )
+}
+
+function TeamOption({ team, otherTeamId }: { team: TeamSummary; otherTeamId: string | null }) {
+  const taken = team.id === otherTeamId
+  return (
+    <option value={team.id} disabled={taken}>
+      {team.name}
+      {taken ? ' (no outro lado)' : ''}
+    </option>
   )
 }
 

@@ -11,7 +11,8 @@ const formation = {
 
 describe('linhas do banco', () => {
   it('aceita timestamps PostgREST nas três tabelas', () => {
-    expect(teamRowSchema.safeParse({ id, name: 'Time', color: '#aAbB00', default_formation: '4-3-3', created_at: timestamp, updated_at: timestamp }).success).toBe(true)
+    expect(teamRowSchema.safeParse({ id, user_id: null, name: 'Time', color: '#aAbB00', default_formation: '4-3-3', created_at: timestamp, updated_at: timestamp }).success).toBe(true)
+    expect(teamRowSchema.safeParse({ id, user_id: id, name: 'Time', color: '#aAbB00', default_formation: '4-3-3', created_at: timestamp, updated_at: timestamp }).success).toBe(true)
     expect(playerRowSchema.safeParse({ ...player, id, team_id: id, nickname: null, sort_order: 0, created_at: timestamp }).success).toBe(true)
     expect(formationRowSchema.safeParse(formation).success).toBe(true)
   })

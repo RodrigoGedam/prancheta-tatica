@@ -2,13 +2,17 @@ import { useState } from 'react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { ChevronRightIcon, PlusIcon, UploadIcon } from 'lucide-react'
 import { z } from 'zod'
+import { SignInButton } from '@/components/AuthMenu'
 import { Button } from '@/components/ui/button'
 import { ImportCsvDialog } from '@/components/teams/ImportCsvDialog'
 import { TeamFormDialog } from '@/components/teams/TeamFormDialog'
 import { TeamPanel } from '@/components/teams/TeamPanel'
 import { TeamDot, firstFreeColor } from '@/components/teams/shared'
 import { useTeams } from '@/hooks/useTeamData'
+import type { TeamSummary } from '@/lib/supabase/queries'
+import { groupTeams } from '@/lib/teams/ownership'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/authStore'
 
 const searchSchema = z.object({ time: z.string().optional().catch(undefined) })
 
@@ -19,6 +23,50 @@ export const Route = createFileRoute('/times')({
 
 type ImportState = { initialTeam?: { name: string; color: string } } | null
 
+function TeamGroup({
+  title,
+  teams,
+  selectedId,
+  empty,
+}: {
+  title: string
+  teams: readonly TeamSummary[]
+  selectedId: string | undefined
+  empty?: string
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="m-0 mt-1 text-xs font-semibold tracking-[0.06em] text-muted uppercase">{title}</h2>
+      {teams.length === 0 && empty ? <p className="m-0 text-sm text-muted">{empty}</p> : null}
+      {teams.map((t) => {
+        const active = t.id === selectedId
+        return (
+          <Link
+            key={t.id}
+            to="/times"
+            search={{ time: t.id }}
+            replace
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'flex items-center gap-3 rounded-xl border p-3.5 text-ink no-underline transition-colors',
+              active ? 'border-accent bg-control' : 'border-line bg-surface hover:border-line-strong',
+            )}
+          >
+            <TeamDot color={t.color} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-base font-semibold">{t.name}</span>
+              <span className="text-xs text-muted">
+                {t.playerCount} {t.playerCount === 1 ? 'jogador' : 'jogadores'}
+              </span>
+            </span>
+            <ChevronRightIcon size={18} className="text-faint" aria-hidden="true" />
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
 function TimesPage() {
   const { time } = Route.useSearch()
   const navigate = Route.useNavigate()
@@ -26,8 +74,11 @@ function TimesPage() {
   const [teamDialog, setTeamDialog] = useState<'new' | 'edit' | null>(null)
   const [importState, setImportState] = useState<ImportState>(null)
 
+  const signedIn = useAuthStore((s) => s.user !== null)
+
   const list = teams.data ?? []
-  const selected = list.find((t) => t.id === time) ?? list[0]
+  const { mine, defaults } = groupTeams(list)
+  const selected = list.find((t) => t.id === time) ?? mine[0] ?? defaults[0]
   const select = (id: string | undefined) => void navigate({ search: { time: id }, replace: true })
 
   return (
@@ -35,21 +86,30 @@ function TimesPage() {
       <section aria-label="Lista de times" className="flex max-w-[340px] flex-[1_1_300px] flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <h1 className="m-0 font-display text-[32px] font-bold">Times</h1>
-          <div className="flex gap-1.5">
-            <Button
-              size="icon"
-              aria-label="Importar CSV"
-              title="Importar CSV"
-              onClick={() => setImportState({})}
-            >
-              <UploadIcon size={16} aria-hidden="true" />
-            </Button>
-            <Button onClick={() => setTeamDialog('new')}>
-              <PlusIcon size={16} aria-hidden="true" />
-              Novo time
-            </Button>
-          </div>
+          {signedIn ? (
+            <div className="flex gap-1.5">
+              <Button
+                size="icon"
+                aria-label="Importar CSV"
+                title="Importar CSV"
+                onClick={() => setImportState({})}
+              >
+                <UploadIcon size={16} aria-hidden="true" />
+              </Button>
+              <Button onClick={() => setTeamDialog('new')}>
+                <PlusIcon size={16} aria-hidden="true" />
+                Novo time
+              </Button>
+            </div>
+          ) : null}
         </div>
+
+        {signedIn ? null : (
+          <div className="flex flex-col items-start gap-2.5 rounded-xl border border-line bg-surface p-3.5">
+            <p className="m-0 text-sm text-muted">Entre com sua conta para criar times e formações que só você vê.</p>
+            <SignInButton variant="primary" />
+          </div>
+        )}
 
         {teams.isPending ? <p className="m-0 text-sm text-muted">Carregando times…</p> : null}
         {teams.isError ? (
@@ -58,31 +118,10 @@ function TimesPage() {
           </p>
         ) : null}
 
-        {list.map((t) => {
-          const active = t.id === selected?.id
-          return (
-            <Link
-              key={t.id}
-              to="/times"
-              search={{ time: t.id }}
-              replace
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                'flex items-center gap-3 rounded-xl border p-3.5 text-ink no-underline transition-colors',
-                active ? 'border-accent bg-control' : 'border-line bg-surface hover:border-line-strong',
-              )}
-            >
-              <TeamDot color={t.color} />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-base font-semibold">{t.name}</span>
-                <span className="text-xs text-muted">
-                  {t.playerCount} {t.playerCount === 1 ? 'jogador' : 'jogadores'}
-                </span>
-              </span>
-              <ChevronRightIcon size={18} className="text-faint" aria-hidden="true" />
-            </Link>
-          )
-        })}
+        {signedIn && teams.isSuccess ? (
+          <TeamGroup title="Meus times" teams={mine} selectedId={selected?.id} empty="Nenhum time ainda. Crie um, importe um CSV ou copie um clube da Série A." />
+        ) : null}
+        {defaults.length > 0 ? <TeamGroup title="Série A 2026" teams={defaults} selectedId={selected?.id} /> : null}
       </section>
 
       {selected ? (
@@ -92,6 +131,7 @@ function TimesPage() {
           onEditTeam={() => setTeamDialog('edit')}
           onReimport={() => setImportState({ initialTeam: { name: selected.name, color: selected.color } })}
           onDeleted={() => select(undefined)}
+          onCopied={select}
         />
       ) : teams.isSuccess ? (
         <section className="flex flex-[999_1_640px] flex-col items-center justify-center gap-4 rounded-[14px] border border-dashed border-line-strong bg-surface p-10 text-center">

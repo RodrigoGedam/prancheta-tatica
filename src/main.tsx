@@ -1,10 +1,18 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from './queryClient'
 import { routeTree } from './routeTree.gen'
+import { initAuth } from './stores/authStore'
 import { startAutosave } from './stores/autosave'
 import './styles.css'
+
+// Antes da sessão: se ela limpar a prancheta de outra conta, a limpeza também precisa ficar salva.
+startAutosave()
+
+// Antes do router: a volta do Google traz um código na URL, que a sessão consome e remove.
+await initAuth()
 
 const router = createRouter({ routeTree })
 
@@ -14,14 +22,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-startAutosave()
-
-const root = document.getElementById('root')
+const root =document.getElementById('root')
 if (!root) throw new Error('Elemento #root não encontrado')
-
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } },
-})
 
 createRoot(root).render(
   <StrictMode>

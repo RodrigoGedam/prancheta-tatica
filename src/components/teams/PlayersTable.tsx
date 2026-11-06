@@ -18,11 +18,14 @@ const helper = createColumnHelper<typeof features, PlayerRow>()
 interface PlayersTableProps {
   players: PlayerRow[]
   numberColor: string
-  onEdit: (player: PlayerRow) => void
-  onDelete: (player: PlayerRow) => void
+  /** Sem as ações, a tabela é só leitura (times padrão). */
+  actions?: {
+    onEdit: (player: PlayerRow) => void
+    onDelete: (player: PlayerRow) => void
+  }
 }
 
-export function PlayersTable({ players, numberColor, onEdit, onDelete }: PlayersTableProps) {
+export function PlayersTable({ players, numberColor, actions }: PlayersTableProps) {
   const [sort, setSort] = useState<PlayerSort>(DEFAULT_PLAYER_SORT)
   const sortedPlayers = useMemo(() => sortPlayers(players, sort), [players, sort])
 
@@ -56,17 +59,18 @@ export function PlayersTable({ players, numberColor, onEdit, onDelete }: Players
     }),
     helper.display({
       id: 'actions',
-      header: () => <span className="sr-only">Ações</span>,
-      cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <IconButton label={`Editar ${row.original.name}`} onClick={() => onEdit(row.original)}>
-            <PencilIcon size={16} aria-hidden="true" />
-          </IconButton>
-          <IconButton label={`Excluir ${row.original.name}`} onClick={() => onDelete(row.original)} danger>
-            <Trash2Icon size={16} aria-hidden="true" />
-          </IconButton>
-        </div>
-      ),
+      header: () => (actions ? <span className="sr-only">Ações</span> : null),
+      cell: ({ row }) =>
+        actions ? (
+          <div className="flex justify-end gap-1">
+            <IconButton label={`Editar ${row.original.name}`} onClick={() => actions.onEdit(row.original)}>
+              <PencilIcon size={16} aria-hidden="true" />
+            </IconButton>
+            <IconButton label={`Excluir ${row.original.name}`} onClick={() => actions.onDelete(row.original)} danger>
+              <Trash2Icon size={16} aria-hidden="true" />
+            </IconButton>
+          </div>
+        ) : null,
     }),
   ])
 

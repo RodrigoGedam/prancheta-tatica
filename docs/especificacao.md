@@ -18,7 +18,10 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 
 - Projeto na nuvem, região `sa-east-1` (ainda não criado).
 - Tabelas: `teams`, `players`, `formations` (só as customizadas).
-- Anon key + RLS permissiva, sem Auth.
+- Chave publishable + RLS por dono. Login só com Google, pelo Supabase Auth.
+- **Visitante:** usa a prancheta e vê os times padrão, sem gravar nada no banco.
+- **Com conta:** cria times e formações que só ele vê, e pode excluir a conta, o que apaga esses dados.
+- A prancheta de um visitante continua ao entrar na conta. Ao sair, ou quando outra conta entra no mesmo navegador, a prancheta e o histórico de desfazer são limpos.
 - A prancheta atual fica no `localStorage` (não existe tabela de pranchetas).
 
 ### Regras do time
@@ -29,13 +32,16 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 ### Times padrão
 
 - Os 20 clubes da Série A 2026 já vêm no banco, carregados de `data/serie-a-2026/` por `pnpm squads:seed`.
-- São editáveis e excluíveis como qualquer time. Importar um CSV com o mesmo nome substitui o elenco, com a confirmação de sempre.
-- Repetir a carga não altera times que já existem, salvo com `--force`.
+- São iguais para todos e somente leitura no app (`user_id` nulo). Só `pnpm squads:seed`, com a chave secreta, os altera.
+- "Copiar para Meus times" cria uma cópia privada e editável. Importar um CSV com o nome de um time padrão cria um time próprio; substituir vale só para os times do próprio usuário.
+- Cada usuário pode ter um time com o nome de um padrão, mas não dois com o mesmo nome.
+- Repetir a carga não altera times padrão que já existem, salvo com `--force`.
 
 ## 3. Rotas
 
 - `/`: prancheta.
-- `/times`: CRUD de times, tabela de jogadores e importação (a importação também abre a partir da prancheta).
+- `/times`: lista "Meus times" e "Série A 2026", CRUD dos próprios times, tabela de jogadores e importação (a importação também abre a partir da prancheta).
+- Não há rotas de login: o botão "Entrar com Google" e o menu da conta ficam no cabeçalho.
 - Tabela de jogadores: titulares sempre primeiro. Ao abrir um time, ordena por posição, na ordem da lista de posições. Clicar em Nº, Nome ou Posição ordena por essa coluna dentro de titulares e de reservas; clicar de novo inverte.
 
 ## 4. Prancheta
@@ -58,7 +64,7 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 ## 5. Formações
 
 - Fixas: 4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 5-3-2.
-- Customizadas: exigem exatamente 11 em campo; guardam slot + posição; são espelhadas para o time de cima; podem ser renomeadas e excluídas.
+- Customizadas: exigem login e são privadas; exigem exatamente 11 em campo; guardam slot + posição; são espelhadas para o time de cima; podem ser renomeadas e excluídas.
 
 ## 6. Desenho
 

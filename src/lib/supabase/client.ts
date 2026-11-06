@@ -18,7 +18,7 @@ export function getSupabase(): SupabaseClient {
     )
   }
   client = createClient(env.data.VITE_SUPABASE_URL, env.data.VITE_SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
   })
   return client
 }

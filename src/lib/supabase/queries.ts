@@ -33,6 +33,7 @@ export class DataError extends Error {}
 function toDataError(error: PostgrestError): DataError {
   if (error.code === '23505') return new DataError('Já existe um registro com esse nome.')
   if (error.code === '23514') return new DataError('Algum valor está fora do formato aceito.')
+  if (error.code === '42501') return new DataError('Você não tem permissão para isso. Entre na sua conta e tente de novo.')
   // Regras do banco (raise exception) já vêm com a mensagem pronta, ex.: limite de titulares.
   if (error.code === 'P0001') return new DataError(error.message)
   return new DataError(`Erro ao falar com o Supabase: ${error.message}`)
@@ -111,6 +112,17 @@ export async function importTeam(input: TeamInput, players: ImportPlayer[]): Pro
     await getSupabase().rpc('import_team', { p_name: team.name, p_color: team.color, p_players: payload }),
   )
   return z.uuid().parse(data)
+}
+
+/** Cria uma cópia privada do time para o usuário logado e devolve o id dela. */
+export async function copyTeam(teamId: string): Promise<string> {
+  const data: unknown = check(await getSupabase().rpc('copy_team', { p_team_id: teamId }))
+  return z.uuid().parse(data)
+}
+
+/** Apaga o usuário logado; o banco leva junto os times e as formações dele. */
+export async function deleteOwnAccount(): Promise<void> {
+  check(await getSupabase().rpc('delete_own_account'))
 }
 
 export async function fetchFormations(): Promise<FormationRow[]> {
