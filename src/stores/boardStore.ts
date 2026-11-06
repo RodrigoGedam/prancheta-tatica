@@ -45,6 +45,12 @@ interface BoardState {
   addShape: (shape: DrawShape) => void
   updateShape: (shape: DrawShape) => void
   removeShape: (id: string) => void
+  /** Apaga todos os desenhos; times e jogadores ficam como estão. */
+  clearShapes: () => void
+  /** Mantém os times e volta ao estado de quando foram escolhidos, na formação padrão de cada um, sem desenhos. */
+  restoreTeams: (formations: Partial<Record<Side, string>>) => void
+  /** Volta a prancheta ao estado vazio, inclusive os times escolhidos. */
+  clearBoard: () => void
 }
 
 /** O que entra no histórico de desfazer (tudo menos Esconder). */
@@ -95,6 +101,31 @@ export const useBoardStore = create<BoardState>()(
           ),
         removeShape: (id) =>
           set((state) => (state.shapes.some((s) => s.id === id) ? { shapes: state.shapes.filter((s) => s.id !== id) } : state)),
+
+        clearShapes: () => set((state) => (state.shapes.length > 0 ? { shapes: [] } : state)),
+
+        restoreTeams: (formations) =>
+          set((state) => {
+            const restore = (side: Side): SideState => {
+              const s = state.sides[side]
+              return s.teamId ? { ...emptySide(formations[side] ?? s.formationId), teamId: s.teamId } : s
+            }
+            const home = restore('home')
+            const away = restore('away')
+            return {
+              // Sem time e sem desenho, as referências não mudam e não nasce passo de desfazer.
+              sides: home === state.sides.home && away === state.sides.away ? state.sides : { home, away },
+              shapes: state.shapes.length > 0 ? [] : state.shapes,
+              hidden: { home: false, away: false },
+            }
+          }),
+
+        clearBoard: () =>
+          set((state) => {
+            const empty = emptySnapshot()
+            // Já vazia: só Esconder (fora do histórico) pode mudar, então não nasce passo de desfazer.
+            return visibleKey(state) === visibleKey(empty) ? { hidden: empty.hidden } : empty
+          }),
 
         setTeam: (side, teamId, formationId) =>
           set((state) => ({

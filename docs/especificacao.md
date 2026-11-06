@@ -51,6 +51,9 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
   - **Resetar**.
 - Token: círculo na cor do time + número (ou iniciais, se não houver número) + apelido (ou nome). O goleiro usa uma cor de contraste automática. Tooltip ao passar o mouse.
 - Aviso de cores parecidas entre os dois times, com uma cor alternativa que vale só na prancheta.
+- Botão **Resetar** ao lado dos seletores de time, com duas opções (ambas podem ser desfeitas):
+  - **Voltar ao início**: mantém os times e volta ao estado de quando foram escolhidos: titulares na formação padrão de cada time, cores originais, nenhum time escondido e sem desenhos.
+  - **Reiniciar tudo**: limpa também os times escolhidos, como ao abrir a prancheta pela primeira vez.
 
 ## 5. Formações
 
@@ -60,6 +63,7 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 ## 6. Desenho
 
 - Ferramentas: livre, flecha, flecha curva (com ponto de controle), retângulo, círculo (contorno + 20% de preenchimento), texto, borracha (apaga o objeto inteiro), selecionar.
+- Botão abaixo da borracha apaga todos os desenhos de uma vez (pode ser desfeito); times e jogadores não mudam.
 - Tracejado é uma opção de estilo. 6 cores, 3 espessuras.
 - Camada própria, independente dos times.
 - Jogadores só são arrastáveis com a ferramenta Selecionar.

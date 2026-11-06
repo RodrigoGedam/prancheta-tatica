@@ -4,6 +4,7 @@ import { useFormationCatalog } from '@/hooks/useFormations'
 import { useTeams } from '@/hooks/useTeamData'
 import { useBoardStore } from '@/stores/boardStore'
 import { ManageFormationsDialog } from './ManageFormationsDialog'
+import { ResetBoardButton } from './ResetBoardButton'
 import { SIDE_LABEL, useSideActions, useSideModel, type SideModel } from './useBoardModel'
 
 const selectClass =
@@ -22,6 +23,7 @@ export function BoardHeaderControls() {
         ×
       </span>
       <SideControls model={home} otherTeamId={away.state.teamId} onManage={() => setManaging(true)} />
+      <ResetBoardButton />
       <ManageFormationsDialog open={managing} onOpenChange={setManaging} />
     </div>
   )

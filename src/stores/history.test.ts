@@ -3,6 +3,7 @@ import { BOARD_STORAGE_KEY, deserialize } from '@/lib/persistence'
 import type { DrawShape } from '@/lib/geometry/shapes'
 import { startAutosave } from './autosave'
 import {
+  DEFAULT_FORMATION,
   beginHistoryBatch,
   endHistoryBatch,
   forgetTeam,
@@ -27,6 +28,93 @@ beforeEach(() => {
     useBoardStore.setState({ shapes: [], hidden: { home: false, away: false } })
   })
   useBoardStore.temporal.getState().clear()
+})
+
+describe('limpar e resetar a prancheta', () => {
+  const setUp = () => {
+    s().setTeam('home', 't1', '4-3-3')
+    s().setTeam('away', 't2', '4-3-3')
+    s().setFormationId('home', '4-4-2')
+    s().setColorOverride('home', '#000000')
+    s().setPlacements('home', [{ playerId: 'a', x: 1, y: 1 }])
+    s().setPlacements('away', [{ playerId: 'b', x: 2, y: 2 }])
+    s().addShape(arrow('x'))
+    s().toggleHidden('away')
+    useBoardStore.temporal.getState().clear()
+  }
+
+  it('clearShapes apaga os desenhos, mantém o resto e é um passo só', () => {
+    setUp()
+    const sides = s().sides
+    s().addShape(arrow('y'))
+    useBoardStore.temporal.getState().clear()
+    s().clearShapes()
+    expect(s().shapes).toEqual([])
+    expect(s().sides).toBe(sides)
+    expect(s().hidden.away).toBe(true)
+    expect(past()).toBe(1)
+    undo()
+    expect(s().shapes.map((shape) => shape.id)).toEqual(['x', 'y'])
+  })
+
+  it('clearShapes sem desenhos não cria passo', () => {
+    s().clearShapes()
+    expect(past()).toBe(0)
+  })
+
+  it('restoreTeams mantém os times e volta à formação padrão, sem desenhos, cor alternativa nem Esconder', () => {
+    setUp()
+    s().restoreTeams({ home: '3-5-2', away: '5-3-2' })
+    expect(s().sides.home).toEqual({ teamId: 't1', formationId: '3-5-2', colorOverride: null, initialized: false, placements: [] })
+    expect(s().sides.away).toEqual({ teamId: 't2', formationId: '5-3-2', colorOverride: null, initialized: false, placements: [] })
+    expect(s().shapes).toEqual([])
+    expect(s().hidden).toEqual({ home: false, away: false })
+  })
+
+  it('restoreTeams é um passo só de desfazer, mesmo com a formação montada depois', () => {
+    setUp()
+    s().restoreTeams({ home: '3-5-2', away: '5-3-2' })
+    withoutHistory(() => s().setPlacements('home', [{ playerId: 'c', x: 3, y: 3 }]))
+    expect(past()).toBe(1)
+    undo()
+    expect(s().sides.home).toMatchObject({ teamId: 't1', formationId: '4-4-2', colorOverride: '#000000' })
+    expect(s().sides.home.placements.map((p) => p.playerId)).toEqual(['a'])
+    expect(s().shapes).toHaveLength(1)
+  })
+
+  it('restoreTeams não mexe no lado sem time e, sem nada para resetar, não cria passo', () => {
+    s().setFormationId('home', '4-4-2')
+    useBoardStore.temporal.getState().clear()
+    s().restoreTeams({})
+    expect(s().sides.home.formationId).toBe('4-4-2')
+    expect(past()).toBe(0)
+  })
+
+  it('clearBoard tira também os times e pode ser desfeito', () => {
+    setUp()
+    s().clearBoard()
+    expect(s().sides.home).toEqual({ teamId: null, formationId: DEFAULT_FORMATION, colorOverride: null, initialized: false, placements: [] })
+    expect(s().sides.away.teamId).toBeNull()
+    expect(s().shapes).toEqual([])
+    expect(s().hidden).toEqual({ home: false, away: false })
+    expect(past()).toBe(1)
+    undo()
+    expect(s().sides.home.teamId).toBe('t1')
+    expect(s().sides.away.placements).toHaveLength(1)
+    expect(s().shapes).toHaveLength(1)
+  })
+
+  it('clearBoard com a prancheta vazia não cria passo', () => {
+    withoutHistory(() => {
+      s().setFormationId('home', DEFAULT_FORMATION)
+      s().setFormationId('away', DEFAULT_FORMATION)
+    })
+    useBoardStore.setState({ hidden: { home: true, away: false } })
+    useBoardStore.temporal.getState().clear()
+    s().clearBoard()
+    expect(past()).toBe(0)
+    expect(s().hidden).toEqual({ home: false, away: false })
+  })
 })
 
 describe('histórico', () => {

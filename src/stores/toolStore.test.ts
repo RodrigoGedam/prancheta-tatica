@@ -27,4 +27,22 @@ describe('toolStore', () => {
     useToolStore.getState().setTool('arrow')
     expect(useToolStore.getState().selectedId).toBeNull()
   })
+
+  it('resetTools volta à ferramenta e ao estilo de quando a página abre', () => {
+    const tools = useToolStore.getState()
+    tools.setTool('arrow')
+    tools.setColor('#EF4444')
+    tools.setWidth('thick')
+    tools.toggleDashed()
+    tools.select('a')
+    tools.editText('b')
+    tools.resetTools()
+    const { tool, style, selectedId, editingTextId } = useToolStore.getState()
+    expect({ tool, style, selectedId, editingTextId }).toEqual({
+      tool: initial.tool,
+      style: initial.style,
+      selectedId: null,
+      editingTextId: null,
+    })
+  })
 })

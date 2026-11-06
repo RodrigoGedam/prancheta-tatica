@@ -33,11 +33,15 @@ interface ToolState {
   /** Com `style`, a toolbar passa a mostrar o estilo do desenho selecionado. */
   select: (id: string | null, style?: ShapeStyle) => void
   editText: (id: string | null) => void
+  /** Volta ao estado de quando a página abre (ferramenta Selecionar, estilo padrão, nada selecionado). */
+  resetTools: () => void
 }
+
+const defaultStyle = (): ShapeStyle => ({ color: DRAW_COLORS[0].hex, width: 'medium', dashed: false })
 
 export const useToolStore = create<ToolState>()((set) => ({
   tool: 'select',
-  style: { color: DRAW_COLORS[0].hex, width: 'medium', dashed: false },
+  style: defaultStyle(),
   selectedId: null,
   editingTextId: null,
   setTool: (tool) => set({ tool, selectedId: null }),
@@ -46,4 +50,5 @@ export const useToolStore = create<ToolState>()((set) => ({
   toggleDashed: () => set((s) => ({ style: { ...s.style, dashed: !s.style.dashed } })),
   select: (selectedId, style) => set((s) => ({ selectedId, style: style ? { ...style } : s.style })),
   editText: (editingTextId) => set({ editingTextId }),
+  resetTools: () => set({ tool: 'select', style: defaultStyle(), selectedId: null, editingTextId: null }),
 }))

@@ -1,9 +1,10 @@
-import { Redo2Icon, Undo2Icon } from 'lucide-react'
+import { Redo2Icon, Trash2Icon, Undo2Icon } from 'lucide-react'
 import { DRAW_COLORS, type StrokeWidth } from '@/lib/geometry/shapes'
 import { cn } from '@/lib/utils'
 import { useStore } from 'zustand'
 import { useBoardStore } from '@/stores/boardStore'
 import { TOOLS, useToolStore, type Tool } from '@/stores/toolStore'
+import { clearDrawings } from './boardReset'
 import { redoBoard, undoBoard } from './useDrawShortcuts'
 
 /** Ícones do mockup (traço 2, viewBox 24). */
@@ -41,6 +42,7 @@ export function DrawToolbar() {
   const { setTool, setColor, setWidth, toggleDashed } = useToolStore.getState()
   const canUndo = useStore(useBoardStore.temporal, (s) => s.pastStates.length > 0)
   const canRedo = useStore(useBoardStore.temporal, (s) => s.futureStates.length > 0)
+  const hasShapes = useBoardStore((s) => s.shapes.length > 0)
 
   return (
     <aside
@@ -74,6 +76,17 @@ export function DrawToolbar() {
           )
         })}
       </div>
+
+      <button
+        type="button"
+        disabled={!hasShapes}
+        onClick={clearDrawings}
+        aria-label="Apagar todos os desenhos"
+        title="Apagar todos os desenhos"
+        className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-line-strong bg-control p-0 text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-default disabled:text-faint disabled:hover:bg-control"
+      >
+        <Trash2Icon size={20} aria-hidden="true" />
+      </button>
 
       <div aria-hidden="true" className="my-1.5 h-px w-9 bg-[#2a343e]" />
 
