@@ -54,6 +54,7 @@ src/
   lib/colors/          # contraste do goleiro, cores parecidas (puro)
   lib/persistence/     # schema e versionamento do localStorage (puro)
   lib/supabase/        # client e queries
+  lib/players/          # ordenação do elenco (puro)
   lib/squads/           # elenco da Wikipédia: parser, titulares e CSV (puro)
 supabase/migrations/   # SQL
 data/serie-a-2026/     # times padrão: CSVs revisados, clubs.json, manifest.json
@@ -77,4 +78,4 @@ Tudo em `src/lib/**` é **lógica pura**: sem React, sem Konva, sem acesso a red
 
 - Campo vertical, em metros: largura 68 (eixo x), comprimento 105 (eixo y). Origem no canto superior esquerdo. Converter metros ↔ pixels apenas na camada de render.
 - Mandante joga embaixo, visitante em cima. Formações são definidas para o time de baixo e **espelhadas** para o de cima.
-- Posições válidas: `GOL, LD, ZAG, LE, ALD, ALE, VOL, MC, MEI, MD, ME, PD, PE, SA, ATA`.
+- Posições válidas: `GOL, LD, ZAG, LE, VOL, MC, MEI, MD, ME, PD, PE, SA, ATA`.

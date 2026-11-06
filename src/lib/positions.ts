@@ -4,8 +4,6 @@ export const POSITIONS = [
   'LD',
   'ZAG',
   'LE',
-  'ALD',
-  'ALE',
   'VOL',
   'MC',
   'MEI',

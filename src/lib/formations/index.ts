@@ -31,10 +31,10 @@ export const FIXED_FORMATIONS: readonly FormationDef[] = [
   ]),
   formation('3-5-2', [
     ['GOL', center, 100], ['ZAG', 46, 88], ['ZAG', center, 88], ['ZAG', 22, 88],
-    ['ALD', 60, 78], ['VOL', center, 80], ['MC', center, 73], ['MEI', center, 66], ['ALE', 8, 78], ['ATA', 44, 58], ['ATA', 24, 58],
+    ['MD', 60, 78], ['VOL', center, 80], ['MC', center, 73], ['MEI', center, 66], ['ME', 8, 78], ['ATA', 44, 58], ['ATA', 24, 58],
   ]),
   formation('5-3-2', [
-    ['GOL', center, 100], ['ALD', 60, 88], ['ZAG', 46, 88], ['ZAG', center, 88], ['ZAG', 22, 88], ['ALE', 8, 88],
+    ['GOL', center, 100], ['LD', 60, 88], ['ZAG', 46, 88], ['ZAG', center, 88], ['ZAG', 22, 88], ['LE', 8, 88],
     ['MC', 46, 74], ['VOL', center, 80], ['MC', 22, 74], ['ATA', 44, 58], ['ATA', 24, 58],
   ]),
 ]
@@ -70,9 +70,9 @@ export interface AssignmentResult<P extends AssignablePlayer> {
 }
 
 const compatible: Record<Position, readonly Position[]> = {
-  GOL: [], LD: ['ALD', 'MD'], LE: ['ALE', 'ME'], ALD: ['LD', 'MD', 'PD'], ALE: ['LE', 'ME', 'PE'],
+  GOL: [], LD: ['MD'], LE: ['ME'],
   ZAG: ['VOL'], VOL: ['MC', 'ZAG'], MC: ['VOL', 'MEI'], MEI: ['MC', 'SA'],
-  MD: ['ALD', 'PD', 'MC'], ME: ['ALE', 'PE', 'MC'], PD: ['MD', 'SA', 'ATA'],
+  MD: ['LD', 'PD', 'MC'], ME: ['LE', 'PE', 'MC'], PD: ['MD', 'SA', 'ATA'],
   PE: ['ME', 'SA', 'ATA'], SA: ['MEI', 'ATA'], ATA: ['SA', 'PD', 'PE'],
 }
 

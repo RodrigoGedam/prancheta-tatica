@@ -7,7 +7,7 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 - Um arquivo por time. Separador `;`.
 - Colunas: `nome;numero;posicao;apelido;titular` (`titular` = `S`/`N`). Obrigatórias: `nome` e `posicao`.
 - Nome e cor do time são definidos no diálogo de importação (não vêm do CSV).
-- `posicao` vem de uma lista fixa: `GOL, LD, ZAG, LE, ALD, ALE, VOL, MC, MEI, MD, ME, PD, PE, SA, ATA`. Um valor desconhecido gera **aviso** (não erro).
+- `posicao` vem de uma lista fixa: `GOL, LD, ZAG, LE, VOL, MC, MEI, MD, ME, PD, PE, SA, ATA`. Um valor desconhecido gera **aviso** (não erro).
 - Prévia antes de salvar, com erros e avisos por linha.
 - Detectar a codificação: UTF-8 ou Windows-1252.
 - Reimportar um time com o mesmo nome **substitui** os jogadores, após confirmação.
@@ -30,6 +30,7 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 
 - `/`: prancheta.
 - `/times`: CRUD de times, tabela de jogadores e importação (a importação também abre a partir da prancheta).
+- Tabela de jogadores: titulares sempre primeiro. Ao abrir um time, ordena por posição, na ordem da lista de posições. Clicar em Nº, Nome ou Posição ordena por essa coluna dentro de titulares e de reservas; clicar de novo inverte.
 
 ## 4. Prancheta
 

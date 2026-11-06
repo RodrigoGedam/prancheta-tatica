@@ -4,7 +4,7 @@ import type { FormationSlot } from '@/lib/supabase/schemas'
 
 const slot = (position: string, index = 0): FormationSlot => ({ slot: index, position, x: 34, y: 100 })
 const players = (...positions: string[]) => positions.map((position, i) => ({ id: String(i), position }))
-const swapped: Record<string, string> = { LD: 'LE', LE: 'LD', ALD: 'ALE', ALE: 'ALD', MD: 'ME', ME: 'MD', PD: 'PE', PE: 'PD' }
+const swapped: Record<string, string> = { LD: 'LE', LE: 'LD', MD: 'ME', ME: 'MD', PD: 'PE', PE: 'PD' }
 
 describe('formações fixas', () => {
   it('oferece as cinco formações na ordem exigida', () => {
@@ -14,8 +14,8 @@ describe('formações fixas', () => {
       'GOL,LD,ZAG,ZAG,LE,MD,MC,MC,ME,ATA,ATA',
       'GOL,LD,ZAG,ZAG,LE,MC,VOL,MC,PD,ATA,PE',
       'GOL,LD,ZAG,ZAG,LE,VOL,VOL,PD,MEI,PE,ATA',
-      'GOL,ZAG,ZAG,ZAG,ALD,VOL,MC,MEI,ALE,ATA,ATA',
-      'GOL,ALD,ZAG,ZAG,ZAG,ALE,MC,VOL,MC,ATA,ATA',
+      'GOL,ZAG,ZAG,ZAG,MD,VOL,MC,MEI,ME,ATA,ATA',
+      'GOL,LD,ZAG,ZAG,ZAG,LE,MC,VOL,MC,ATA,ATA',
     ])
   })
   for (const id of ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2', '5-3-2']) {
@@ -61,8 +61,8 @@ describe('distribuição', () => {
     expect(assignPlayersToSlots(players('ME', 'MD'), [slot('PD'), slot('PE', 1)]).assigned.map(a => a.player.position)).toEqual(['MD', 'ME'])
   })
   it('tenta a primeira compatibilidade de todos antes da segunda', () => {
-    const result = assignPlayersToSlots(players('MD', 'LAT'), [slot('ALD'), slot('PD', 1)])
-    expect(result.assigned.map(a => a.player.position)).toEqual(['LAT', 'MD'])
+    const result = assignPlayersToSlots(players('MC', 'LAT'), [slot('MD'), slot('MEI', 1)])
+    expect(result.assigned.map(a => a.player.position)).toEqual(['LAT', 'MC'])
   })
   it('preserva a prioridade exata antes de compatíveis', () => {
     expect(assignPlayersToSlots(players('MC', 'LAT'), [slot('VOL'), slot('MC', 1)]).assigned.map(a => a.player.position)).toEqual(['LAT', 'MC'])

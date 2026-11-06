@@ -1,23 +1,17 @@
-import { useState, type ReactNode } from 'react'
-import {
-  createColumnHelper,
-  createSortedRowModel,
-  rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_basic,
-  tableFeatures,
-  useTable,
-  type SortingState,
-} from '@tanstack/react-table'
+import { useMemo, useState, type ReactNode } from 'react'
+import { createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { ArrowDownIcon, ArrowUpIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import { DEFAULT_PLAYER_SORT, sortPlayers, togglePlayerSort, type PlayerSort, type PlayerSortColumn } from '@/lib/players/sort'
 import type { PlayerRow } from '@/lib/supabase/schemas'
 import { cn } from '@/lib/utils'
 
-const features = tableFeatures({
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-  sortFns: { alphanumeric: sortFn_alphanumeric, basic: sortFn_basic },
-})
+const features = tableFeatures({})
+
+const SORTABLE_COLUMNS: readonly string[] = ['number', 'name', 'position'] satisfies PlayerSortColumn[]
+
+function isSortable(columnId: string): columnId is PlayerSortColumn {
+  return SORTABLE_COLUMNS.includes(columnId)
+}
 
 const helper = createColumnHelper<typeof features, PlayerRow>()
 
@@ -29,35 +23,31 @@ interface PlayersTableProps {
 }
 
 export function PlayersTable({ players, numberColor, onEdit, onDelete }: PlayersTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sort, setSort] = useState<PlayerSort>(DEFAULT_PLAYER_SORT)
+  const sortedPlayers = useMemo(() => sortPlayers(players, sort), [players, sort])
 
   const columns = helper.columns([
     helper.accessor('number', {
       header: 'Nº',
-      sortFn: 'basic',
-      sortUndefined: 'last',
       cell: (info) => (
         <span className="font-display text-[17px] font-bold" style={{ color: numberColor }}>
           {info.getValue() ?? '—'}
         </span>
       ),
     }),
-    helper.accessor('name', { header: 'Nome', sortFn: 'alphanumeric' }),
+    helper.accessor('name', { header: 'Nome' }),
     helper.accessor('nickname', {
       header: 'Apelido',
-      enableSorting: false,
       cell: (info) => <span className="text-ink-soft">{info.getValue() ?? '—'}</span>,
     }),
     helper.accessor('position', {
       header: 'Posição',
-      sortFn: 'alphanumeric',
       cell: (info) => (
         <span className="rounded bg-[#2a343e] px-2 py-0.5 text-xs font-semibold">{info.getValue()}</span>
       ),
     }),
     helper.accessor('is_starter', {
       header: 'Titular',
-      sortFn: 'basic',
       cell: (info) => (
         <span className={cn('text-xs font-semibold', info.getValue() ? 'text-accent' : 'text-muted')}>
           {info.getValue() ? 'Titular' : 'Reserva'}
@@ -83,9 +73,7 @@ export function PlayersTable({ players, numberColor, onEdit, onDelete }: Players
   const table = useTable({
     features,
     columns,
-    data: players,
-    state: { sorting },
-    onSortingChange: setSorting,
+    data: sortedPlayers,
     getRowId: (row) => row.id,
   })
 
@@ -96,8 +84,8 @@ export function PlayersTable({ players, numberColor, onEdit, onDelete }: Players
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id} className="bg-surface-2 text-left">
               {group.headers.map((header) => {
-                const sorted = header.column.getIsSorted()
-                const canSort = header.column.getCanSort()
+                const columnId = header.column.id
+                const sorted = sort.column === columnId ? (sort.desc ? 'desc' : 'asc') : false
                 return (
                   <th
                     key={header.id}
@@ -105,14 +93,14 @@ export function PlayersTable({ players, numberColor, onEdit, onDelete }: Players
                     aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : undefined}
                     className={cn(
                       'px-3.5 py-2.5 text-xs font-semibold tracking-[0.06em] text-muted uppercase',
-                      header.column.id === 'number' && 'w-14',
-                      header.column.id === 'actions' && 'w-20',
+                      columnId === 'number' && 'w-14',
+                      columnId === 'actions' && 'w-20',
                     )}
                   >
-                    {canSort ? (
+                    {isSortable(columnId) ? (
                       <button
                         type="button"
-                        onClick={header.column.getToggleSortingHandler()}
+                        onClick={() => setSort((current) => togglePlayerSort(current, columnId))}
                         className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-[inherit] tracking-[inherit] text-inherit uppercase hover:text-ink"
                       >
                         <table.FlexRender header={header} />

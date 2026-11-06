@@ -136,6 +136,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
         <p className="m-0 text-sm text-muted">Nenhum jogador encontrado com esses filtros.</p>
       ) : (
         <PlayersTable
+          key={team.id}
           players={visible}
           numberColor={lighten(team.color)}
           onEdit={(player) => setEditing({ player })}
