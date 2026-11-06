@@ -29,6 +29,22 @@ it('normaliza cabeçalho com BOM, caixa, acentos, espaços, ordem e extras', () 
   expect(rows[0]?.issues).toEqual([])
 })
 
+it('sem coluna titular, só o primeiro goleiro entra e o próximo de linha ocupa a vaga', () => {
+  const lines = ['G1;GOL', 'G2;GOL', ...Array.from({ length: 11 }, (_, i) => `L${i};MC`)]
+  const players = parsePlayersCsv(`nome;posicao\n${lines.join('\n')}`).rows.flatMap(row => row.player ? [row.player] : [])
+  expect(players.filter(p => p.isStarter).map(p => p.name)).toEqual(['G1', ...Array.from({ length: 10 }, (_, i) => `L${i}`)])
+})
+
+it('com coluna titular, avisa e deixa como reserva o segundo goleiro e o 12º titular', () => {
+  const lines = ['G1;GOL;S', 'G2;GOL;S', ...Array.from({ length: 11 }, (_, i) => `L${i};MC;S`)]
+  const { rows } = parsePlayersCsv(`nome;posicao;titular\n${lines.join('\n')}`)
+  expect(rows.filter(row => row.player?.isStarter)).toHaveLength(11)
+  expect(rows[1]?.player?.isStarter).toBe(false)
+  expect(rows[1]?.issues.map(i => i.message)).toEqual(['Já há um goleiro titular; considerado reserva'])
+  expect(rows[12]?.player?.isStarter).toBe(false)
+  expect(rows[12]?.issues.map(i => i.message)).toEqual(['Já há 11 titulares; considerado reserva'])
+})
+
 it('escala somente os primeiros 11 válidos sem coluna titular', () => {
   const records = Array.from({ length: 14 }, (_, i) => `Jogador ${i};MC`)
   records.splice(4, 0, ';MC')

@@ -1,9 +1,11 @@
 import { useForm } from '@tanstack/react-form'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
+import { useFormationCatalog } from '@/hooks/useFormations'
 import { useCreateTeam, useUpdateTeam } from '@/hooks/useTeamData'
 import type { TeamSummary } from '@/lib/supabase/queries'
-import { teamInputSchema } from '@/lib/supabase/schemas'
+import { teamFormSchema } from '@/lib/supabase/schemas'
+import { DEFAULT_FORMATION } from '@/stores/boardStore'
 import { ColorPicker, FieldError, FormAlert, inputClass, labelClass } from './shared'
 
 interface TeamFormDialogProps {
@@ -29,12 +31,17 @@ function TeamForm({ team, defaultColor, onSaved }: Omit<TeamFormDialogProps, 'op
   const create = useCreateTeam()
   const update = useUpdateTeam()
   const mutation = team ? update : create
+  const catalog = useFormationCatalog()
 
   const form = useForm({
-    defaultValues: { name: team?.name ?? '', color: team?.color ?? defaultColor },
-    validators: { onChange: teamInputSchema, onSubmit: teamInputSchema },
+    defaultValues: {
+      name: team?.name ?? '',
+      color: team?.color ?? defaultColor,
+      default_formation: team?.default_formation ?? DEFAULT_FORMATION,
+    },
+    validators: { onChange: teamFormSchema, onSubmit: teamFormSchema },
     onSubmit: async ({ value }) => {
-      const input = teamInputSchema.parse(value)
+      const input = teamFormSchema.parse(value)
       const saved = team ? await update.mutateAsync({ id: team.id, input }) : await create.mutateAsync(input)
       onSaved(saved.id)
     },
@@ -88,6 +95,45 @@ function TeamForm({ team, defaultColor, onSaved }: Omit<TeamFormDialogProps, 'op
         </form.Field>
         <form.Field name="color">
           {(field) => <ColorPicker value={field.state.value} onChange={field.handleChange} />}
+        </form.Field>
+        <form.Field name="default_formation">
+          {(field) => {
+            const known = [...catalog.fixed, ...catalog.custom].some((f) => f.id === field.state.value)
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="team-formation" className={labelClass}>
+                  Formação padrão
+                </label>
+                <select
+                  id="team-formation"
+                  className={inputClass}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                >
+                  {known ? null : (
+                    <option value={field.state.value}>
+                      {catalog.isSettled ? `Formação excluída (usa ${DEFAULT_FORMATION})` : 'Carregando…'}
+                    </option>
+                  )}
+                  {catalog.fixed.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                  {catalog.custom.length > 0 ? (
+                    <optgroup label="Minhas formações">
+                      {catalog.custom.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : null}
+                </select>
+                <span className="text-[13px] text-muted">Aparece na prancheta ao selecionar este time.</span>
+              </div>
+            )
+          }}
         </form.Field>
         {mutation.error ? <FormAlert>{mutation.error.message}</FormAlert> : null}
       </form>

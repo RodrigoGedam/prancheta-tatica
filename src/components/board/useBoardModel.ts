@@ -37,6 +37,8 @@ export interface SideModel {
   color: string
   goalkeeperColor: string
   formation: FormationDef
+  /** Formação custom ainda carregando: `formation` é só a substituta temporária. */
+  formationPending: boolean
   onPitch: PlacedPlayer[]
   bench: PlayerRow[]
 }
@@ -60,6 +62,7 @@ export function useSideModel(side: Side): SideModel {
     })
     const placedIds = new Set(onPitch.map((p) => p.player.id))
     const color = state.colorOverride ?? team?.color ?? '#5E6B77'
+    const formation = catalog.resolve(state.formationId)
     return {
       side,
       state,
@@ -69,7 +72,8 @@ export function useSideModel(side: Side): SideModel {
       playersLoaded: Boolean(team) && players.isSuccess,
       color,
       goalkeeperColor: contrastColor(color),
-      formation: catalog.resolve(state.formationId),
+      formation,
+      formationPending: !catalog.isSettled && formation.id !== state.formationId,
       onPitch,
       bench: sortByPosition(list.filter((p) => !placedIds.has(p.id))),
     }
@@ -91,6 +95,7 @@ export function useSideActions(model: SideModel) {
         applyFormation(side, formationId, model.players, catalog.resolve(formationId).slots)
       },
       reset() {
+        if (model.formationPending) return
         useBoardStore
           .getState()
           .setPlacements(side, initialPlacements(model.players, model.formation.slots, side))
@@ -141,6 +146,8 @@ function syncSides(models: readonly SideModel[], teamsLoaded: boolean, catalogLo
     }
     if (!m.team || !m.playersLoaded) continue
     if (!m.state.initialized) {
+      // A formação padrão pode ser custom: espera o catálogo para não montar na formação errada.
+      if (m.formationPending) continue
       // Primeira vez (ou elenco reimportado, ver resetTeam): titulares na formação escolhida.
       store.setPlacements(m.side, initialPlacements(m.players, m.formation.slots, m.side))
       continue

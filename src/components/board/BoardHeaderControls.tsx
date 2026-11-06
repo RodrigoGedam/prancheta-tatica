@@ -53,7 +53,10 @@ function SideControls({
         id={id}
         className={`${selectClass} w-[150px] truncate font-semibold`}
         value={model.state.teamId ?? ''}
-        onChange={(e) => setTeam(side, e.target.value || null)}
+        onChange={(e) => {
+          const teamId = e.target.value || null
+          setTeam(side, teamId, teams.data?.find((t) => t.id === teamId)?.default_formation)
+        }}
         disabled={!teams.isSuccess}
       >
         <option value="">{teams.isPending ? 'Carregando…' : 'Escolha o time'}</option>

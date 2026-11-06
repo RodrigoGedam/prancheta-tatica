@@ -10,7 +10,7 @@ import {
   updatePlayer,
   updateTeam,
 } from '@/lib/supabase/queries'
-import type { ImportPlayer, PlayerInput, TeamInput } from '@/lib/supabase/schemas'
+import type { ImportPlayer, PlayerInput, TeamFormInput, TeamInput } from '@/lib/supabase/schemas'
 import { resetTeamEverywhere } from '@/stores/boardStore'
 
 export const teamKeys = {
@@ -33,7 +33,7 @@ export function usePlayers(teamId: string | undefined) {
 export function useCreateTeam() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: TeamInput) => createTeam(input),
+    mutationFn: (input: TeamFormInput) => createTeam(input),
     onSuccess: () => qc.invalidateQueries({ queryKey: teamKeys.all }),
   })
 }
@@ -41,7 +41,7 @@ export function useCreateTeam() {
 export function useUpdateTeam() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: TeamInput }) => updateTeam(id, input),
+    mutationFn: ({ id, input }: { id: string; input: TeamFormInput }) => updateTeam(id, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: teamKeys.all }),
   })
 }

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { PencilIcon, PlusIcon, Trash2Icon, UploadIcon } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { useFormationCatalog } from '@/hooks/useFormations'
 import { useDeletePlayer, useDeleteTeam, usePlayers } from '@/hooks/useTeamData'
 import { lighten } from '@/lib/colors'
 import { POSITIONS } from '@/lib/positions'
@@ -26,6 +27,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
   const players = usePlayers(team.id)
   const deleteTeam = useDeleteTeam()
   const deletePlayer = useDeletePlayer(team.id)
+  const catalog = useFormationCatalog()
 
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState('')
@@ -65,7 +67,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
           <h2 className="m-0 font-display text-[28px] font-bold">{team.name}</h2>
           <span className="text-[13px] text-muted">
             {team.playerCount} {team.playerCount === 1 ? 'jogador' : 'jogadores'} · {starters}{' '}
-            {starters === 1 ? 'titular' : 'titulares'} · atualizado em {formatDate(team.updated_at)}
+            {starters === 1 ? 'titular' : 'titulares'} · formação padrão {catalog.resolve(team.default_formation).name} · atualizado em {formatDate(team.updated_at)}
           </span>
         </div>
         <Button variant="primary" onClick={onReimport}>
@@ -151,6 +153,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted }: TeamPanel
         open={editing !== null}
         onOpenChange={(open) => !open && setEditing(null)}
         teamId={team.id}
+        roster={all}
         player={editing?.player ?? null}
         nextSortOrder={nextSortOrder}
         onSaved={() => setEditing(null)}

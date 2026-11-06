@@ -21,8 +21,8 @@ export function useFormationCatalog() {
       customDefs.find((f) => f.id === id) ??
       getFixedFormation(DEFAULT_FORMATION) ??
       (FIXED_FORMATIONS[0] as FormationDef)
-    return { fixed: FIXED_FORMATIONS, custom: customDefs, resolve, isLoaded: custom.isSuccess }
-  }, [custom.data, custom.isSuccess])
+    return { fixed: FIXED_FORMATIONS, custom: customDefs, resolve, isLoaded: custom.isSuccess, isSettled: !custom.isPending }
+  }, [custom.data, custom.isSuccess, custom.isPending])
 }
 
 export function useCreateFormation() {

@@ -7,7 +7,7 @@ const color = z.string().regex(HEX_COLOR_REGEX, 'Cor inválida.')
 const number = z.number({ error: 'Número deve ser de 0 a 99.' }).int('Número deve ser de 0 a 99.').min(0, 'Número deve ser de 0 a 99.').max(99, 'Número deve ser de 0 a 99.').nullable()
 
 export const teamRowSchema = z.object({
-  id: z.uuid(), name: z.string().min(1).max(40), color,
+  id: z.uuid(), name: z.string().min(1).max(40), color, default_formation: z.string().min(1).max(40),
   created_at: z.string(), updated_at: z.string(),
 })
 export const playerRowSchema = z.object({
@@ -28,6 +28,10 @@ export const formationRowSchema = z.object({
   created_at: z.string(), updated_at: z.string(),
 })
 export const teamInputSchema = z.object({ name: teamName, color })
+/** Criar e editar pelo formulário; a importação por CSV não mexe na formação padrão. */
+export const teamFormSchema = teamInputSchema.extend({
+  default_formation: z.string().min(1, 'Escolha a formação padrão.').max(40),
+})
 export const playerInputSchema = z.object({
   name: playerName, number,
   position: z.string().trim().toUpperCase().min(1, 'Informe a posição.').max(10, 'Use no máximo 10 caracteres.'),
@@ -41,5 +45,6 @@ export type PlayerRow = z.output<typeof playerRowSchema>
 export type FormationSlot = z.output<typeof formationSlotSchema>
 export type FormationRow = z.output<typeof formationRowSchema>
 export type TeamInput = z.output<typeof teamInputSchema>
+export type TeamFormInput = z.output<typeof teamFormSchema>
 export type PlayerInput = z.output<typeof playerInputSchema>
 export type ImportPlayer = z.output<typeof importPlayerSchema>

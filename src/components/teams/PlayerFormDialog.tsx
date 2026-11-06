@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { useSavePlayer } from '@/hooks/useTeamData'
+import { starterProblem } from '@/lib/players/starters'
 import { POSITIONS } from '@/lib/positions'
 import { playerInputSchema, type PlayerRow } from '@/lib/supabase/schemas'
 import { FieldError, FormAlert, inputClass, labelClass } from './shared'
@@ -22,6 +23,8 @@ interface PlayerFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   teamId: string
+  /** Elenco atual, para aplicar os limites de titulares. */
+  roster: readonly PlayerRow[]
   /** Jogador a editar; null = novo jogador. */
   player: PlayerRow | null
   nextSortOrder: number
@@ -36,7 +39,7 @@ export function PlayerFormDialog({ open, onOpenChange, ...props }: PlayerFormDia
   )
 }
 
-function PlayerForm({ teamId, player, nextSortOrder, onSaved }: Omit<PlayerFormDialogProps, 'open' | 'onOpenChange'>) {
+function PlayerForm({ teamId, roster, player, nextSortOrder, onSaved }: Omit<PlayerFormDialogProps, 'open' | 'onOpenChange'>) {
   const save = useSavePlayer(teamId)
   const positions: readonly string[] =
     player && !(POSITIONS as readonly string[]).includes(player.position) ? [player.position, ...POSITIONS] : POSITIONS
@@ -52,6 +55,7 @@ function PlayerForm({ teamId, player, nextSortOrder, onSaved }: Omit<PlayerFormD
     validators: { onChange: playerFormSchema, onSubmit: playerFormSchema },
     onSubmit: async ({ value }) => {
       const v = playerFormSchema.parse(value)
+      if (starterProblem(roster, { id: player?.id ?? null, position: v.position, is_starter: v.is_starter })) return
       const input = playerInputSchema.parse({
         name: v.name,
         number: v.number === '' ? null : Number(v.number),
@@ -72,9 +76,17 @@ function PlayerForm({ teamId, player, nextSortOrder, onSaved }: Omit<PlayerFormD
           <DialogClose asChild>
             <Button variant="secondary">Cancelar</Button>
           </DialogClose>
-          <form.Subscribe selector={(s) => s.isSubmitting}>
-            {(isSubmitting) => (
-              <Button variant="primary" type="submit" form="player-form" disabled={isSubmitting}>
+          <form.Subscribe selector={(s) => [s.isSubmitting, s.values.position, s.values.is_starter] as const}>
+            {([isSubmitting, position, isStarter]) => (
+              <Button
+                variant="primary"
+                type="submit"
+                form="player-form"
+                disabled={
+                  isSubmitting ||
+                  starterProblem(roster, { id: player?.id ?? null, position, is_starter: isStarter }) !== null
+                }
+              >
                 {isSubmitting ? 'Salvando…' : 'Salvar'}
               </Button>
             )}
@@ -196,6 +208,16 @@ function PlayerForm({ teamId, player, nextSortOrder, onSaved }: Omit<PlayerFormD
             </label>
           )}
         </form.Field>
+        <form.Subscribe selector={(s) => [s.values.position, s.values.is_starter] as const}>
+          {([position, isStarter]) => {
+            const problem = starterProblem(roster, { id: player?.id ?? null, position, is_starter: isStarter })
+            return problem ? (
+              <div className="col-span-2">
+                <FormAlert>{problem}</FormAlert>
+              </div>
+            ) : null
+          }}
+        </form.Subscribe>
         {save.error ? (
           <div className="col-span-2">
             <FormAlert>{save.error.message}</FormAlert>

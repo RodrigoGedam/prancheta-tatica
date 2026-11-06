@@ -27,6 +27,13 @@ describe('boardStore', () => {
     expect(s().sides.home).toMatchObject({ formationId: '4-4-2', initialized: false, placements: [] })
   })
 
+  it('setTeam usa a formação padrão do time quando informada', () => {
+    s().setTeam('home', 't1')
+    s().setFormationId('home', '4-4-2')
+    s().setTeam('home', 't2', '3-5-2')
+    expect(s().sides.home).toMatchObject({ teamId: 't2', formationId: '3-5-2', initialized: false })
+    s().setFormationId('home', '4-3-3')
+  })
   it('setTeam mantém a formação e limpa o resto', () => {
     s().setTeam('home', 't1')
     s().setFormationId('home', '5-3-2')

@@ -11,7 +11,8 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 - Prévia antes de salvar, com erros e avisos por linha.
 - Detectar a codificação: UTF-8 ou Windows-1252.
 - Reimportar um time com o mesmo nome **substitui** os jogadores, após confirmação.
-- Sem a coluna `titular`, os 11 primeiros são titulares.
+- Sem a coluna `titular`, os 11 primeiros são titulares, com um só goleiro.
+- Limite de titulares (ver Dados): com a coluna `titular`, o excedente vira reserva, com aviso na prévia.
 
 ## 2. Dados (Supabase)
 
@@ -19,6 +20,11 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 - Tabelas: `teams`, `players`, `formations` (só as customizadas).
 - Anon key + RLS permissiva, sem Auth.
 - A prancheta atual fica no `localStorage` (não existe tabela de pranchetas).
+
+### Regras do time
+
+- **Formação padrão:** cada time tem uma (fixa ou customizada), escolhida ao criar ou editar; o padrão é 4-3-3. Ao selecionar o time na prancheta, o lado assume essa formação. Formação custom excluída equivale a 4-3-3.
+- **Titulares:** no máximo 11 por time, com um só goleiro, mesmo com menos de 11. Para trocar, é preciso tirar um titular antes. O banco de dados também garante a regra.
 
 ### Times padrão
 

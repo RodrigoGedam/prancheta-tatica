@@ -93,7 +93,7 @@ function BenchSection({ model }: { model: SideModel }) {
           className={iconButton}
           aria-label="Resetar time"
           title="Resetar"
-          disabled={!team || !model.playersLoaded}
+          disabled={!team || !model.playersLoaded || model.formationPending}
           onClick={actions.reset}
         >
           <RotateCcwIcon size={17} aria-hidden="true" />

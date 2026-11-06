@@ -6,6 +6,7 @@ import {
   importPlayerSchema,
   playerInputSchema,
   playerRowSchema,
+  teamFormSchema,
   teamInputSchema,
   teamRowSchema,
   type FormationRow,
@@ -13,6 +14,7 @@ import {
   type ImportPlayer,
   type PlayerInput,
   type PlayerRow,
+  type TeamFormInput,
   type TeamInput,
   type TeamRow,
 } from './schemas'
@@ -31,6 +33,8 @@ export class DataError extends Error {}
 function toDataError(error: PostgrestError): DataError {
   if (error.code === '23505') return new DataError('Já existe um registro com esse nome.')
   if (error.code === '23514') return new DataError('Algum valor está fora do formato aceito.')
+  // Regras do banco (raise exception) já vêm com a mensagem pronta, ex.: limite de titulares.
+  if (error.code === 'P0001') return new DataError(error.message)
   return new DataError(`Erro ao falar com o Supabase: ${error.message}`)
 }
 
@@ -61,14 +65,14 @@ export async function fetchPlayers(teamId: string): Promise<PlayerRow[]> {
   return z.array(playerRowSchema).parse(data)
 }
 
-export async function createTeam(input: TeamInput): Promise<TeamRow> {
-  const values = teamInputSchema.parse(input)
+export async function createTeam(input: TeamFormInput): Promise<TeamRow> {
+  const values = teamFormSchema.parse(input)
   const data: unknown = check(await getSupabase().from('teams').insert(values).select().single())
   return teamRowSchema.parse(data)
 }
 
-export async function updateTeam(id: string, input: TeamInput): Promise<TeamRow> {
-  const values = teamInputSchema.parse(input)
+export async function updateTeam(id: string, input: TeamFormInput): Promise<TeamRow> {
+  const values = teamFormSchema.parse(input)
   const data: unknown = check(await getSupabase().from('teams').update(values).eq('id', id).select().single())
   return teamRowSchema.parse(data)
 }

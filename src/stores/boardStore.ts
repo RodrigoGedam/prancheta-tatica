@@ -29,7 +29,8 @@ interface BoardState {
   nextZ: number
   /** Desenhos (camada própria, independente dos times), na ordem de desenho. */
   shapes: DrawShape[]
-  setTeam: (side: Side, teamId: string | null) => void
+  /** Troca o time. `formationId` é a formação padrão do time; sem ela, o lado mantém a atual. */
+  setTeam: (side: Side, teamId: string | null, formationId?: string) => void
   /** Substitui todos os jogadores em campo do lado (formação inicial, troca de formação, resetar). */
   setPlacements: (side: Side, placements: Omit<Placement, 'z'>[], formationId?: string) => void
   placePlayer: (side: Side, playerId: string, point: Point) => void
@@ -95,9 +96,9 @@ export const useBoardStore = create<BoardState>()(
         removeShape: (id) =>
           set((state) => (state.shapes.some((s) => s.id === id) ? { shapes: state.shapes.filter((s) => s.id !== id) } : state)),
 
-        setTeam: (side, teamId) =>
+        setTeam: (side, teamId, formationId) =>
           set((state) => ({
-            sides: { ...state.sides, [side]: { ...emptySide(state.sides[side].formationId), teamId } },
+            sides: { ...state.sides, [side]: { ...emptySide(formationId ?? state.sides[side].formationId), teamId } },
             hidden: { ...state.hidden, [side]: false },
           })),
 

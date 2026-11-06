@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formationRowSchema, importPlayerSchema, playerInputSchema, playerRowSchema, teamInputSchema, teamRowSchema } from './schemas'
+import { formationRowSchema, importPlayerSchema, playerInputSchema, playerRowSchema, teamFormSchema, teamInputSchema, teamRowSchema } from './schemas'
 
 const id = '550e8400-e29b-41d4-a716-446655440000'
 const timestamp = '2026-11-05T12:34:56.123456+00:00'
@@ -11,7 +11,7 @@ const formation = {
 
 describe('linhas do banco', () => {
   it('aceita timestamps PostgREST nas três tabelas', () => {
-    expect(teamRowSchema.safeParse({ id, name: 'Time', color: '#aAbB00', created_at: timestamp, updated_at: timestamp }).success).toBe(true)
+    expect(teamRowSchema.safeParse({ id, name: 'Time', color: '#aAbB00', default_formation: '4-3-3', created_at: timestamp, updated_at: timestamp }).success).toBe(true)
     expect(playerRowSchema.safeParse({ ...player, id, team_id: id, nickname: null, sort_order: 0, created_at: timestamp }).success).toBe(true)
     expect(formationRowSchema.safeParse(formation).success).toBe(true)
   })
@@ -31,6 +31,12 @@ describe('entradas de time', () => {
   })
   it.each(['#FFF', 'blue'])('rejeita cor %s', (color) => {
     expect(teamInputSchema.safeParse({ name: 'Time', color }).success).toBe(false)
+  })
+})
+describe('formulário de time', () => {
+  it('exige a formação padrão', () => {
+    expect(teamFormSchema.safeParse({ name: 'Time', color: '#123456' }).success).toBe(false)
+    expect(teamFormSchema.parse({ name: 'Time', color: '#123456', default_formation: '3-5-2' }).default_formation).toBe('3-5-2')
   })
 })
 describe('entradas de jogador', () => {

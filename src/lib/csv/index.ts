@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 import { z } from 'zod'
+import { GOALKEEPER_POSITION, MAX_STARTERS } from '@/lib/players/starters'
 import { isPosition } from '@/lib/positions'
 
 export type CsvEncoding = 'utf-8' | 'windows-1252'
@@ -75,7 +76,8 @@ export function parsePlayersCsv(text: string): ParsedPlayersCsv {
   let headers: string[] | undefined
   let cursor = 0
   let line = 1
-  let validCount = 0
+  let starterCount = 0
+  let hasStarterGoalkeeper = false
   const firstNumberLines = new Map<number, number>()
   const fileError = (message: string) => fileIssues.push({ line: null, severity: 'error', message })
 
@@ -143,11 +145,22 @@ export function parsePlayersCsv(text: string): ParsedPlayersCsv {
           if (firstLine !== undefined) issue('warning', `Número ${number} repetido (linha ${firstLine})`)
           else firstNumberLines.set(number, startLine)
         }
-        player = {
-          name: raw.nome, number, position, nickname: raw.apelido || null,
-          isStarter: hasStarter ? starter === 'S' || starter === 'SIM' : validCount < 11,
+        // Sem a coluna, todos são candidatos: os primeiros válidos preenchem as 11 vagas, com um só goleiro.
+        const wantsStarter = hasStarter ? starter === 'S' || starter === 'SIM' : true
+        const isGoalkeeper = position === GOALKEEPER_POSITION
+        const blocked =
+          wantsStarter && isGoalkeeper && hasStarterGoalkeeper
+            ? 'Já há um goleiro titular; considerado reserva'
+            : wantsStarter && starterCount >= MAX_STARTERS
+              ? `Já há ${MAX_STARTERS} titulares; considerado reserva`
+              : null
+        if (blocked && hasStarter) issue('warning', blocked)
+        const isStarter = wantsStarter && !blocked
+        if (isStarter) {
+          starterCount++
+          if (isGoalkeeper) hasStarterGoalkeeper = true
         }
-        validCount++
+        player = { name: raw.nome, number, position, nickname: raw.apelido || null, isStarter }
       }
       rows.push({ line: startLine, raw, player, issues })
     },
