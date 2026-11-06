@@ -5,12 +5,12 @@ Instruções para qualquer agente de código (Claude Code, Codex) que trabalhe n
 
 ## O projeto
 
-Campinho é uma prancheta tática de futebol de campo (11 contra 11), web, desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login com Google libera times e formações privados.
+Campinho é uma prancheta tática de futebol de campo (11 contra 11), web, desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (e-mail e senha ou Google) libera times e formações privados.
 
 - **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
 - Plano de implementação e divisão de tarefas entre agentes: [`docs/plano-implementacao.md`](docs/plano-implementacao.md).
-- Fora do escopo (não implementar): login por e-mail e senha, compartilhamento, bola/cones, export PNG, várias pranchetas, mobile.
+- Fora do escopo (não implementar): confirmação de e-mail, recuperação de senha, compartilhamento, bola/cones, export PNG, várias pranchetas, mobile.
 
 ## Stack (fechada — não propor alternativas)
 
@@ -21,7 +21,7 @@ Campinho é uma prancheta tática de futebol de campo (11 contra 11), web, deskt
 - Konva via react-konva (nenhuma outra lib de canvas)
 - Zustand + zundo (undo/redo)
 - Papa Parse (CSV)
-- Supabase com chave publishable, Auth só com Google e RLS por dono (`user_id` nulo = time padrão)
+- Supabase com chave publishable, Auth com e-mail e senha ou Google e RLS por dono (`user_id` nulo = time padrão)
 - Vitest para testes
 
 ## Comandos

@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import { create } from 'zustand'
+import { authErrorMessage, type Credentials } from '@/lib/auth/credentials'
 import { BOARD_STORAGE_KEY, serialize } from '@/lib/persistence'
 import { getSupabase } from '@/lib/supabase/client'
 import { deleteOwnAccount } from '@/lib/supabase/queries'
@@ -87,6 +88,18 @@ export async function signInWithGoogle(): Promise<void> {
     options: { redirectTo: window.location.href },
   })
   if (error) throw new Error('Não foi possível abrir o login do Google. Tente de novo.')
+}
+
+export async function signInWithPassword(credentials: Credentials): Promise<void> {
+  const { error } = await getSupabase().auth.signInWithPassword(credentials)
+  if (error) throw new Error(authErrorMessage(error.code))
+}
+
+/** Sem confirmação de e-mail, o cadastro já abre a sessão. Sem sessão, a pessoa não entrou: não fingir sucesso. */
+export async function signUpWithPassword(credentials: Credentials): Promise<void> {
+  const { data, error } = await getSupabase().auth.signUp(credentials)
+  if (error) throw new Error(authErrorMessage(error.code))
+  if (!data.session) throw new Error('Não foi possível criar a conta. Se este e-mail já tem cadastro, use Entrar.')
 }
 
 export async function signOut(): Promise<void> {

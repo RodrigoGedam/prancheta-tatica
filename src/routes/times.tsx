@@ -107,7 +107,7 @@ function TimesPage() {
         {signedIn ? null : (
           <div className="flex flex-col items-start gap-2.5 rounded-xl border border-line bg-surface p-3.5">
             <p className="m-0 text-sm text-muted">Entre com sua conta para criar times e formações que só você vê.</p>
-            <SignInButton variant="primary" />
+            <SignInButton variant="primary" label="Entrar ou criar conta" />
           </div>
         )}
 
