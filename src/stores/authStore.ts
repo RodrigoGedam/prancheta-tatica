@@ -1,4 +1,4 @@
-import type { User } from '@supabase/supabase-js'
+import { isAuthRetryableFetchError, type User } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import { authErrorMessage, type Credentials } from '@/lib/auth/credentials'
 import { BOARD_STORAGE_KEY, serialize } from '@/lib/persistence'
@@ -10,9 +10,11 @@ import { useToolStore } from './toolStore'
 
 interface AuthState {
   user: User | null
+  /** A sessão não pôde ser conferida (ex.: sem rede): ainda não dá para concluir que a pessoa saiu da conta. */
+  sessionUnknown: boolean
 }
 
-export const useAuthStore = create<AuthState>()(() => ({ user: null }))
+export const useAuthStore = create<AuthState>()(() => ({ user: null, sessionUnknown: false }))
 
 const BOARD_OWNER_KEY = 'prancheta-tatica:prancheta:dono'
 
@@ -52,32 +54,44 @@ export function claimBoard(userId: string | null) {
 }
 
 function applySession(user: User | null) {
-  const previousId = useAuthStore.getState().user?.id
+  const { user: previous, sessionUnknown } = useAuthStore.getState()
   useAuthStore.setState({ user })
-  // Renovar o token não troca de usuário: os dados continuam valendo.
-  if (previousId === user?.id) return
+  // Renovar o token não troca de usuário: os dados continuam valendo. Depois de uma sessão não conferida,
+  // o primeiro evento é a resposta que faltava e sempre decide o dono da prancheta.
+  if (!sessionUnknown && previous?.id === user?.id) return
   // Fora do callback de onAuthStateChange: chamar o Supabase dentro dele pode travar.
   setTimeout(() => {
     claimBoard(user?.id ?? null)
     void queryClient.resetQueries()
+    // Só depois de descartar as listas lidas como visitante: com elas, useBoardSync tiraria os times privados.
+    useAuthStore.setState({ sessionUnknown: false })
   }, 0)
 }
 
 /**
  * Descobre a sessão antes da primeira renderização. Se a lista de times carregasse antes dela, os times
- * privados pareceriam excluídos e useBoardSync limparia a prancheta. Qualquer falha vale como visitante.
+ * privados pareceriam excluídos e useBoardSync limparia a prancheta. Uma falha de rede (com a sessão
+ * vencida) não prova que a pessoa saiu: a prancheta fica como está até o Supabase responder.
  */
 export async function initAuth(): Promise<void> {
   try {
     const supabase = getSupabase()
-    const { data } = await supabase.auth.getSession()
-    const user = data.session?.user ?? null
-    useAuthStore.setState({ user })
-    claimBoard(user?.id ?? null)
-    supabase.auth.onAuthStateChange((_event, session) => applySession(session?.user ?? null))
+    const { data, error } = await supabase.auth.getSession()
+    // Só falha de rede é provisória (o Supabase tenta de novo e avisa). Qualquer outro erro, como um
+    // token de renovação recusado, já encerrou a sessão: vale como saída.
+    if (error && isAuthRetryableFetchError(error)) {
+      useAuthStore.setState({ user: null, sessionUnknown: true })
+    } else {
+      const user = data.session?.user ?? null
+      useAuthStore.setState({ user, sessionUnknown: false })
+      claimBoard(user?.id ?? null)
+    }
+    supabase.auth.onAuthStateChange((event, session) => {
+      // A sessão inicial já foi lida acima; depois de um erro, este evento viria vazio e limparia a prancheta.
+      if (event !== 'INITIAL_SESSION') applySession(session?.user ?? null)
+    })
   } catch {
-    useAuthStore.setState({ user: null })
-    claimBoard(null)
+    useAuthStore.setState({ user: null, sessionUnknown: true })
   }
 }
 

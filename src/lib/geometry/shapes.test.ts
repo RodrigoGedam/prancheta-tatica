@@ -19,7 +19,7 @@ describe('schema', () => {
     for (const s of shapes) expect(drawShapeSchema.safeParse(s).success).toBe(true)
   })
   it('rejeita dados invalidos', () => {
-    for (const s of [{ ...base, type: 'unknown' }, { ...shapes[0], points: [from] }, { ...shapes[3], width: -1 }, { ...shapes[5], fontSize: 0 }, { ...shapes[0], id: '' }]) expect(drawShapeSchema.safeParse(s).success).toBe(false)
+    for (const s of [{ ...base, type: 'unknown' }, { ...shapes[0], points: [from] }, { ...shapes[3], width: -1 }, { ...shapes[5], fontSize: 0 }, { ...shapes[0], id: '' }, { ...shapes[1], style: { ...style, color: 'red' } }]) expect(drawShapeSchema.safeParse(s).success).toBe(false)
   })
 })
 describe('hitTest', () => {

@@ -30,7 +30,8 @@ export const FILL_OPACITY = 0.2
 export const pointSchema = z.object({ x: z.number(), y: z.number() })
 
 export const shapeStyleSchema = z.object({
-  color: z.string(),
+  // Mesmo formato que `parseHex` aceita: outra coisa lançaria erro ao desenhar e derrubaria a prancheta.
+  color: z.string().regex(/^#(?:[\da-f]{3}|[\da-f]{6})$/i),
   width: z.enum(['thin', 'medium', 'thick']),
   dashed: z.boolean(),
 })

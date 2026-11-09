@@ -8,6 +8,7 @@ import type { Point, Side } from '@/lib/geometry/pitch'
 import { sortByPosition } from '@/lib/players/sort'
 import type { TeamSummary } from '@/lib/supabase/queries'
 import type { FormationSlot, PlayerRow } from '@/lib/supabase/schemas'
+import { useAuthStore } from '@/stores/authStore'
 import {
   DEFAULT_FORMATION,
   forgetTeam,
@@ -129,10 +130,12 @@ export function dropPlayer(side: Side, playerId: string, point: Point): Point {
 export function useBoardSync(models: readonly SideModel[]) {
   const teams = useTeams()
   const catalog = useFormationCatalog()
+  // Sessão não conferida: as listas vêm como de visitante, e time ou formação privados pareceriam excluídos.
+  const sessionKnown = useAuthStore((s) => !s.sessionUnknown)
   useEffect(() => {
     // Ajustes automáticos completam a ação do usuário que os provocou: não viram passos de desfazer.
-    withoutHistory(() => syncSides(models, teams.isSuccess, catalog.isLoaded))
-  }, [models, teams.isSuccess, catalog])
+    withoutHistory(() => syncSides(models, sessionKnown && teams.isSuccess, sessionKnown && catalog.isLoaded))
+  }, [models, teams.isSuccess, catalog, sessionKnown])
 }
 
 /** Corrige cada lado conforme os dados carregados (ver useBoardSync). */
