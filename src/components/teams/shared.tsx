@@ -42,7 +42,7 @@ export function FieldError({ errors }: { errors: readonly unknown[] }) {
 
 export function FormAlert({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="m-0 rounded-lg border border-[#4a2a2a] bg-[#241a1c] px-3.5 py-2.5 text-sm text-danger">
+    <p role="alert" className="m-0 rounded-lg border border-[#57291b] bg-[#2b1510] px-3.5 py-2.5 text-sm text-danger">
       {children}
     </p>
   )
@@ -73,7 +73,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
                 'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                 selected ? 'border-accent' : 'border-surface',
               )}
-              style={{ background: c.hex, boxShadow: selected ? undefined : '0 0 0 1px #3a4652' }}
+              style={{ background: c.hex, boxShadow: selected ? undefined : '0 0 0 1px var(--color-edge)' }}
             />
           )
         })}

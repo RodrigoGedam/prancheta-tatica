@@ -47,7 +47,7 @@ export function ColorOptions({ colors, value, onChoose, suggestion }: ColorOptio
               'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
               selected ? 'border-accent' : 'border-surface',
             )}
-            style={{ background: hex, boxShadow: suggested ? '0 0 0 2px var(--color-accent)' : '0 0 0 1px #3a4652' }}
+            style={{ background: hex, boxShadow: suggested ? '0 0 0 2px var(--color-accent)' : '0 0 0 1px var(--color-edge)' }}
           />
         )
       })}
@@ -77,7 +77,7 @@ export function BoardColorButton({ model }: { model: SideModel }) {
           <span
             aria-hidden="true"
             className="size-3 rounded-full ring-1 ring-white/40"
-            style={{ background: model.team ? model.color : '#3a4652' }}
+            style={{ background: model.team ? model.color : 'var(--color-edge)' }}
           />
         </button>
       </Popover.Trigger>

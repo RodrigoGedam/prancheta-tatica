@@ -1,25 +1,33 @@
 @import 'tailwindcss';
 
-/* Tokens do design aprovado (tema escuro, destaque verde-limão). */
+/*
+ * Paleta bordô-noturno. O bordô (action) preenche ações e seleção; o rosé-vinho
+ * (accent) fica com linhas, foco e textos de destaque, onde o bordô não teria contraste.
+ */
 @theme {
   --font-sans: 'Barlow', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
 
-  --color-ground: #0f1418;
-  --color-surface: #151b21;
-  --color-surface-2: #1a2129;
-  --color-control: #1e262e;
-  --color-line: #26303a;
-  --color-line-strong: #2e3944;
-  --color-ink: #e8edf1;
-  --color-ink-soft: #c5cfd8;
-  --color-muted: #93a1ae;
-  --color-faint: #5e6b77;
-  --color-accent: #b8f23c;
-  --color-accent-hover: #d4ff7a;
-  --color-on-accent: #0f1418;
+  --color-ground: #12080c;
+  --color-surface: #1a0c12;
+  --color-surface-2: #221119;
+  --color-control: #2a1520;
+  --color-chip: #3d2130;
+  --color-line: #3a1f2b;
+  --color-line-strong: #4a2a37;
+  --color-edge: #5c3a49;
+  --color-glow: #33101f;
+  --color-ink: #f6ecef;
+  --color-ink-soft: #dcc8cf;
+  --color-muted: #b89fa9;
+  --color-faint: #a08791;
+  --color-accent: #f08aa3;
+  --color-action: #9e1c44;
+  --color-action-hover: #b42752;
+  --color-on-accent: #fff5f7;
+  --color-success: #9adba8;
   --color-warning: #facc15;
-  --color-danger: #f59e9e;
+  --color-danger: #ff9a76;
 
   --color-pitch: #2e7a46;
   --color-pitch-stripe: #2a713f;
@@ -37,5 +45,13 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    color-scheme: dark;
+    scrollbar-color: var(--color-edge) transparent;
+  }
+  ::selection {
+    background: var(--color-action);
+    color: var(--color-on-accent);
   }
 }

@@ -63,7 +63,7 @@ export function DrawToolbar() {
               onClick={() => setTool(t.id)}
               className={cn(
                 'relative flex size-11 cursor-pointer items-center justify-center rounded-[10px] border p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
-                active ? 'border-accent bg-accent text-on-accent' : 'border-line-strong bg-control text-ink hover:bg-surface-2',
+                active ? 'border-accent bg-action text-on-accent' : 'border-line-strong bg-control text-ink hover:bg-surface-2',
               )}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -88,7 +88,7 @@ export function DrawToolbar() {
         <Trash2Icon size={20} aria-hidden="true" />
       </button>
 
-      <div aria-hidden="true" className="my-1.5 h-px w-9 bg-[#2a343e]" />
+      <div aria-hidden="true" className="my-1.5 h-px w-9 bg-chip" />
 
       <button
         type="button"
@@ -125,7 +125,7 @@ export function DrawToolbar() {
                 applyStyle({ color: c.hex })
               }}
               className={cn(
-                'size-5 cursor-pointer rounded-full border-2 p-0 shadow-[inset_0_0_0_1px_#0f1418] outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'size-5 cursor-pointer rounded-full border-2 p-0 shadow-[inset_0_0_0_1px_var(--color-ground)] outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
                 active ? 'border-accent' : 'border-line-strong',
               )}
               style={{ background: c.hex }}

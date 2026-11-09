@@ -26,7 +26,7 @@ export const TEXT_SIZE: Record<StrokeWidth, number> = { thin: 1.8, medium: 2.3, 
 const ERASER_TOLERANCE = 0.8
 /** Tolerância (m) da simplificação do traço livre. */
 const FREE_EPSILON = 0.12
-const ACCENT = '#B8F23C'
+const ACCENT = '#FFC9D6'
 
 export const newShapeId = () => crypto.randomUUID()
 
@@ -107,7 +107,7 @@ function Selection({ shape, scale }: { shape: DrawShape; scale: number }) {
             x={shape.control.x}
             y={shape.control.y}
             radius={6 * px}
-            fill="#0F1418"
+            fill="#12080C"
             stroke={ACCENT}
             strokeWidth={2 * px}
             hitStrokeWidth={10 * px}

@@ -3,9 +3,9 @@ import { Slot } from 'radix-ui'
 import { cn } from '@/lib/utils'
 
 const variants = {
-  primary: 'bg-accent font-bold text-on-accent hover:bg-accent-hover',
+  primary: 'bg-action font-bold text-on-accent hover:bg-action-hover',
   secondary: 'border border-line-strong bg-control text-ink hover:bg-surface-2',
-  danger: 'border border-[#4a2a2a] bg-[#241a1c] text-danger hover:bg-[#2e1f22]',
+  danger: 'border border-[#57291b] bg-[#2b1510] text-danger hover:bg-[#36190f]',
   ghost: 'border border-transparent bg-transparent text-muted hover:bg-control hover:text-ink',
 } as const
 

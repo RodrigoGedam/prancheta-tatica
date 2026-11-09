@@ -200,7 +200,7 @@ function PlayerForm({ teamId, roster, player, nextSortOrder, onSaved }: Omit<Pla
             <label className="col-span-2 flex cursor-pointer items-center gap-2.5 text-[15px]">
               <input
                 type="checkbox"
-                className="size-4 accent-[#b8f23c]"
+                className="size-4 accent-action"
                 checked={field.state.value}
                 onChange={(e) => field.handleChange(e.target.checked)}
               />

@@ -104,7 +104,7 @@ function FormationItem({ formation, onDelete }: { formation: FormationRow; onDel
             </button>
             <button
               type="button"
-              className={cn(iconButton, 'hover:bg-[#241a1c] hover:text-danger')}
+              className={cn(iconButton, 'hover:bg-[#2b1510] hover:text-danger')}
               aria-label={`Excluir ${formation.name}`}
               onClick={onDelete}
             >

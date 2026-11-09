@@ -46,7 +46,7 @@ export function PlayersTable({ players, numberColor, actions }: PlayersTableProp
     helper.accessor('position', {
       header: 'Posição',
       cell: (info) => (
-        <span className="rounded bg-[#2a343e] px-2 py-0.5 text-xs font-semibold">{info.getValue()}</span>
+        <span className="rounded bg-chip px-2 py-0.5 text-xs font-semibold">{info.getValue()}</span>
       ),
     }),
     helper.accessor('is_starter', {
@@ -122,7 +122,7 @@ export function PlayersTable({ players, numberColor, actions }: PlayersTableProp
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="border-t border-[#222b34] hover:bg-surface-2/60">
+            <tr key={row.id} className="border-t border-line hover:bg-surface-2/60">
               {row.getAllCells().map((cell) => (
                 <td key={cell.id} className="px-3.5 py-[9px]">
                   <table.FlexRender cell={cell} />
@@ -155,7 +155,7 @@ function IconButton({
       onClick={onClick}
       className={cn(
         'flex size-[30px] cursor-pointer items-center justify-center rounded-md border border-transparent bg-transparent p-0 text-muted',
-        danger ? 'hover:bg-[#241a1c] hover:text-danger' : 'hover:bg-control hover:text-ink',
+        danger ? 'hover:bg-[#2b1510] hover:text-danger' : 'hover:bg-control hover:text-ink',
       )}
     >
       {children}

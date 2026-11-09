@@ -19,7 +19,7 @@ function BoardPage() {
   return (
     <div className="flex min-h-0 flex-1">
       <DrawToolbar />
-      <main className="flex min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_50%_40%,#16202a_0%,var(--color-ground)_70%)]">
+      <main className="flex min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_50%_40%,var(--color-glow)_0%,var(--color-ground)_70%)]">
         <ColorWarning home={home} away={away} />
         <Board sides={sides} />
       </main>

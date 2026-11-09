@@ -53,14 +53,14 @@ function BenchSection({ model }: { model: SideModel }) {
       {dropping ? (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 rounded-xl bg-[#0F1418]/80 text-accent"
+          className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 rounded-xl bg-ground/80 text-accent"
         >
           <ArrowDownToLineIcon size={26} />
           <span className="font-display text-lg font-bold">Solte para voltar ao banco</span>
         </div>
       ) : null}
       <div className="flex items-center gap-2">
-        <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ background: team ? model.color : '#3a4652' }} />
+        <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ background: team ? model.color : 'var(--color-edge)' }} />
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate font-display text-[19px] leading-tight font-bold">{team?.name ?? 'Sem time'}</span>
           <span className="text-xs text-muted">
@@ -122,7 +122,7 @@ function BenchSection({ model }: { model: SideModel }) {
                 }}
                 title={`${p.name} · ${p.position}`}
                 className={cn(
-                  'flex items-center gap-2.5 rounded-lg bg-[#1f2730] px-2 py-1.5',
+                  'flex items-center gap-2.5 rounded-lg bg-control px-2 py-1.5',
                   selecting && 'cursor-grab active:cursor-grabbing',
                 )}
               >
@@ -134,7 +134,7 @@ function BenchSection({ model }: { model: SideModel }) {
                   {tokenMark(p)}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">{p.nickname ?? p.name}</span>
-                <span className="rounded bg-[#2a343e] px-1.5 py-0.5 text-[11px] font-semibold text-ink-soft">
+                <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold text-ink-soft">
                   {p.position}
                 </span>
               </li>

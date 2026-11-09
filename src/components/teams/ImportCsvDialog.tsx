@@ -157,7 +157,7 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
 
         <div className="flex flex-wrap gap-4">
           {loaded ? (
-            <div className="flex flex-[1_1_280px] items-center gap-3 rounded-[10px] border border-dashed border-[#3a4652] bg-surface-2 px-3.5 py-3">
+            <div className="flex flex-[1_1_280px] items-center gap-3 rounded-[10px] border border-dashed border-edge bg-surface-2 px-3.5 py-3">
               <FileTextIcon size={28} strokeWidth={1.8} className="text-accent" aria-hidden="true" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold">{loaded.fileName}</span>
@@ -182,7 +182,7 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
               onDrop={onDrop}
               className={cn(
                 'flex flex-[1_1_280px] cursor-pointer items-center gap-3 rounded-[10px] border border-dashed bg-surface-2 px-3.5 py-3 text-left text-ink',
-                dragging ? 'border-accent' : 'border-[#3a4652] hover:border-accent/60',
+                dragging ? 'border-accent' : 'border-edge hover:border-accent/60',
               )}
             >
               <UploadIcon size={26} strokeWidth={1.8} className="text-accent" aria-hidden="true" />
@@ -278,9 +278,9 @@ function findTeam<T extends { name: string; user_id: string | null }>(teams: rea
 }
 
 const chipTones = {
-  ok: 'bg-[#1e2a14] text-accent',
+  ok: 'bg-[#14291b] text-success',
   warn: 'bg-[#2a2312] text-warning',
-  error: 'bg-[#2e1719] text-danger',
+  error: 'bg-[#2b1510] text-danger',
 } as const
 
 function Chip({ tone, children }: { tone: keyof typeof chipTones; children: ReactNode }) {
@@ -308,7 +308,7 @@ function PreviewTable({ rows }: { rows: readonly CsvRow[] }) {
               <tr
                 key={r.line}
                 className={cn(
-                  'border-t border-[#222b34]',
+                  'border-t border-line',
                   hasError && 'bg-[rgba(245,158,158,0.07)]',
                   hasWarning && 'bg-[rgba(250,204,21,0.06)]',
                 )}
