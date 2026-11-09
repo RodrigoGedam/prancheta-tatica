@@ -3,7 +3,7 @@ import type { Placement } from '@/lib/board/placement'
 import type { Side } from '@/lib/geometry/pitch'
 import { drawShapeSchema, type DrawShape } from '@/lib/geometry/shapes'
 
-export const BOARD_STORAGE_KEY = 'campinho:prancheta'
+export const BOARD_STORAGE_KEY = 'prancheta-tatica:prancheta'
 export const BOARD_SCHEMA_VERSION = 1
 export const DEFAULT_FORMATION_ID = '4-3-3'
 export interface PersistedSide {

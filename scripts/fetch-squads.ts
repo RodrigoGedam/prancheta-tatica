@@ -11,7 +11,7 @@ import { parseWikipediaSquad, pickStarters, toPlayersCsv } from '@/lib/squads'
 import { csvPath, readClubs, readManifest, writeManifest, type Club } from './squad-data'
 
 const API = 'https://pt.wikipedia.org/w/api.php'
-const HEADERS = { 'User-Agent': 'campinho-squads/0.1 (projeto pessoal)', 'Api-User-Agent': 'campinho-squads/0.1' }
+const HEADERS = { 'User-Agent': 'prancheta-tatica-squads/0.1 (projeto pessoal)', 'Api-User-Agent': 'prancheta-tatica-squads/0.1' }
 const DELAY_MS = 5_000
 const RETRY_DELAY_MS = 30_000
 const MAX_ATTEMPTS = 4

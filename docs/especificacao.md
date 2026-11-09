@@ -1,4 +1,4 @@
-# Especificação — Campinho
+# Especificação — Prancheta Tática
 
 Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 

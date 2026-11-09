@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import type { Side } from '@/lib/geometry/pitch'
 
 /** Tipo do dataTransfer ao arrastar um jogador do banco (HTML) para o campo (canvas). */
-export const BENCH_DRAG_MIME = 'application/x-campinho-player'
+export const BENCH_DRAG_MIME = 'application/x-prancheta-tatica-player'
 
 const benchDragSchema = z.object({ side: z.enum(['home', 'away']), playerId: z.string().min(1) })
 

@@ -1,6 +1,6 @@
 -- Executar como superusuário, depois das migrations 0001 a 0003.
 begin;
-insert into auth.users (id,aud,role,email) values ('a0000000-0000-4000-8000-000000000001','authenticated','authenticated','campinho-access-a@example.invalid'), ('b0000000-0000-4000-8000-000000000002','authenticated','authenticated','campinho-access-b@example.invalid');
+insert into auth.users (id,aud,role,email) values ('a0000000-0000-4000-8000-000000000001','authenticated','authenticated','prancheta-tatica-access-a@example.invalid'), ('b0000000-0000-4000-8000-000000000002','authenticated','authenticated','prancheta-tatica-access-b@example.invalid');
 insert into public.teams (id,name,color,user_id,default_formation) values ('c0000000-0000-4000-8000-000000000001','Teste acesso padrão','#112233',null,'4-4-2'), ('c0000000-0000-4000-8000-000000000003','Teste acesso padrão','#223344','b0000000-0000-4000-8000-000000000002','4-3-3');
 insert into public.players (id,team_id,name,number,position,nickname,is_starter,sort_order) values ('d0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','Padrão',1,'GOL','Teste',true,7), ('d0000000-0000-4000-8000-000000000003','c0000000-0000-4000-8000-000000000003','Privado B',2,'ZAG',null,false,3);
 insert into public.formations (id,name,slots,user_id) values ('e0000000-0000-4000-8000-000000000002','Teste B','[null,null,null,null,null,null,null,null,null,null,null]'::jsonb,'b0000000-0000-4000-8000-000000000002');

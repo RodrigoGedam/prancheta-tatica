@@ -14,7 +14,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(() => ({ user: null }))
 
-const BOARD_OWNER_KEY = 'campinho:prancheta:dono'
+const BOARD_OWNER_KEY = 'prancheta-tatica:prancheta:dono'
 
 function readBoardOwner(): string | null {
   try {

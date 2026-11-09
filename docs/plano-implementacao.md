@@ -1,4 +1,4 @@
-# Plano de implementação — Campinho
+# Plano de implementação — Prancheta Tática
 
 Spec: [`especificacao.md`](especificacao.md). Regras dos agentes: [`../AGENTS.md`](../AGENTS.md).
 

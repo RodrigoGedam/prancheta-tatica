@@ -13,9 +13,12 @@ function RootLayout() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <header className="flex h-14 shrink-0 items-center gap-6 border-b border-line bg-surface px-5">
-        <Link to="/" className="flex items-center gap-2.5 text-ink no-underline">
+        <Link to="/" className="flex shrink-0 items-center gap-2.5 text-ink no-underline">
           <Logo />
-          <span className="font-display text-2xl font-bold tracking-wider">CAMPINHO</span>
+          <span className="flex flex-col font-display text-lg leading-none font-bold tracking-wider whitespace-nowrap">
+            <span>PRANCHETA</span>
+            <span>TÁTICA</span>
+          </span>
         </Link>
         {onBoard ? <BoardHeaderControls /> : <div className="flex-1" />}
         <nav className="flex items-center gap-1.5" aria-label="Principal">

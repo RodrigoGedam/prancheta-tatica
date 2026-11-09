@@ -1,11 +1,11 @@
-# AGENTS.md — Campinho
+# AGENTS.md — Prancheta Tática
 
 Instruções para qualquer agente de código (Claude Code, Codex) que trabalhe neste repositório.
 `CLAUDE.md` apenas importa este arquivo: **edite aqui**, não lá.
 
 ## O projeto
 
-Campinho é uma prancheta tática de futebol de campo (11 contra 11), web, desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (e-mail e senha ou Google) libera times e formações privados.
+Prancheta Tática é um app web para montar táticas de futebol de campo (11 contra 11), desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (e-mail e senha ou Google) libera times e formações privados.
 
 - **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
