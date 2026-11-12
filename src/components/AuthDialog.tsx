@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
+import { z } from 'zod'
 import { FieldError, FormAlert, inputClass, labelClass } from '@/components/teams/shared'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { signInSchema, signUpSchema } from '@/lib/auth/credentials'
+import { signInSchema, signUpSchema, type SignUpCredentials } from '@/lib/auth/credentials'
 import { cn } from '@/lib/utils'
-import { signInWithGoogle, signInWithPassword, signUpWithPassword } from '@/stores/authStore'
+import { signInWithPassword, signUpWithPassword } from '@/stores/authStore'
 
 type Mode = 'signIn' | 'signUp'
 
@@ -15,14 +16,13 @@ const TABS: readonly { id: Mode; label: string }[] = [
   { id: 'signUp', label: 'Criar conta' },
 ]
 
-/** Entrar ou criar conta, com e-mail e senha ou com Google. */
+/** Entrar com e-mail e senha ou criar conta com nome, e-mail e senha. */
 export function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   return <Dialog open={open} onOpenChange={onOpenChange}>{open ? <AuthContent onDone={() => onOpenChange(false)} /> : null}</Dialog>
 }
 
 function AuthContent({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<Mode>('signIn')
-  const google = useMutation({ mutationFn: signInWithGoogle })
 
   return (
     <DialogContent title={mode === 'signIn' ? 'Entrar' : 'Criar conta'} description="Seus times e formações ficam só na sua conta." className="max-w-md">
@@ -45,28 +45,21 @@ function AuthContent({ onDone }: { onDone: () => void }) {
       </div>
 
       <CredentialsForm key={mode} mode={mode} onDone={onDone} />
-
-      <div className="flex items-center gap-3 text-xs text-muted">
-        <span aria-hidden="true" className="h-px flex-1 bg-line" />
-        ou
-        <span aria-hidden="true" className="h-px flex-1 bg-line" />
-      </div>
-      <Button disabled={google.isPending} onClick={() => google.mutate()}>
-        Entrar com Google
-      </Button>
-      {google.error ? <FormAlert>{google.error.message}</FormAlert> : null}
     </DialogContent>
   )
 }
 
 function CredentialsForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
-  const schema = mode === 'signIn' ? signInSchema : signUpSchema
-  const submit = useMutation({ mutationFn: mode === 'signIn' ? signInWithPassword : signUpWithPassword, onSuccess: onDone })
+  const schema = mode === 'signIn' ? signInSchema.extend({ name: z.string() }) : signUpSchema
+  const submit = useMutation({
+    mutationFn: (credentials: SignUpCredentials) => mode === 'signIn' ? signInWithPassword(credentials) : signUpWithPassword(credentials),
+    onSuccess: onDone,
+  })
   const form = useForm({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '' },
     validators: { onChange: schema, onSubmit: schema },
     onSubmit: async ({ value }) => {
-      await submit.mutateAsync(schema.parse(value))
+      await submit.mutateAsync(value)
     },
   })
 
@@ -78,6 +71,32 @@ function CredentialsForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
         void form.handleSubmit().catch(() => undefined)
       }}
     >
+      {mode === 'signUp' ? (
+        <form.Field name="name">
+          {(field) => (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="auth-name" className={labelClass}>
+                Nome
+              </label>
+              <input
+                id="auth-name"
+                name="name"
+                autoComplete="name"
+                required
+                maxLength={80}
+                className={inputClass}
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                aria-invalid={field.state.meta.isTouched && field.state.meta.errors.length > 0}
+                aria-describedby={field.state.meta.isTouched && field.state.meta.errors.length > 0 ? 'auth-name-error' : undefined}
+                autoFocus
+              />
+              {field.state.meta.isTouched ? <span id="auth-name-error"><FieldError errors={field.state.meta.errors} /></span> : null}
+            </div>
+          )}
+        </form.Field>
+      ) : null}
       <form.Field name="email">
         {(field) => (
           <div className="flex flex-col gap-1.5">
@@ -93,7 +112,7 @@ function CredentialsForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
               aria-invalid={field.state.meta.isTouched && field.state.meta.errors.length > 0}
-              autoFocus
+              autoFocus={mode === 'signIn'}
             />
             {field.state.meta.isTouched ? <FieldError errors={field.state.meta.errors} /> : null}
           </div>

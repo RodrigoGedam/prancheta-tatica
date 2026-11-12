@@ -9,11 +9,13 @@ export const signInSchema = z.object({
 })
 
 export const signUpSchema = z.object({
+  name: z.string().trim().min(1, 'Informe seu nome.').max(80, 'Use no máximo 80 caracteres no nome.'),
   email,
   password: z.string().min(8, 'Use pelo menos 8 caracteres.').max(72, 'Use no máximo 72 caracteres.'),
 })
 
 export type Credentials = z.output<typeof signInSchema>
+export type SignUpCredentials = z.output<typeof signUpSchema>
 
 const MESSAGES: Readonly<Record<string, string>> = {
   invalid_credentials: 'E-mail ou senha incorretos.',

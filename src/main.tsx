@@ -11,7 +11,7 @@ import './styles.css'
 // Antes da sessão: se ela limpar a prancheta de outra conta, a limpeza também precisa ficar salva.
 startAutosave()
 
-// Antes do router: a volta do Google traz um código na URL, que a sessão consome e remove.
+// Antes do router: conferir a sessão antes de carregar os times privados.
 await initAuth()
 
 const router = createRouter({ routeTree })

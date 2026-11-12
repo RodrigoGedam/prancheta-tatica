@@ -1,0 +1,142 @@
+{
+  "paletas": [
+    {
+      "id": "p1",
+      "nome": "Bordô & Areia",
+      "modo": "escuro",
+      "resumo": "Continuação direta do bordô-noturno: fundos marrom-vinho quentes, bordô nas ações, areia nos destaques e teal só no foco.",
+      "ui": {
+        "ground": "#150B0F",
+        "surface": "#1E1117",
+        "raised": "#28171F",
+        "line": "#3E2631",
+        "edge": "#8C6878",
+        "ink": "#F7EEE6",
+        "inkSoft": "#E2D2C6",
+        "muted": "#BFA99D",
+        "action": "#8E1B3D",
+        "actionHover": "#A6244B",
+        "onAction": "#FFF4EC",
+        "focus": "#5CCBBE",
+        "highlight": "#E7C79A",
+        "chip": "#3A2A22",
+        "chipInk": "#E7C79A",
+        "success": "#93D9A6",
+        "warning": "#F2C55C",
+        "danger": "#FF967A"
+      },
+      "marca": {
+        "base": "#8E1B3D",
+        "mark": "#FFF4EC",
+        "accent": "#E7C79A",
+        "night": "#150B0F",
+        "wordDark": "#F7EEE6",
+        "word2Dark": "#E7C79A",
+        "paper": "#F5EDE3",
+        "wordLight": "#2A1219",
+        "word2Light": "#8E1B3D"
+      },
+      "campo": {
+        "pitch": "#2E7A46",
+        "stripe": "#2A713F",
+        "line": "#F2F5EF",
+        "draw": "#F3D6A6",
+        "away": "#F7EEE6",
+        "awayInk": "#2A1219",
+        "tokenEdge": "#F2F5EF"
+      }
+    },
+    {
+      "id": "p2",
+      "nome": "Vermelho & Navy",
+      "modo": "escuro",
+      "resumo": "Mais esportiva e fria: navy profundo nos fundos, vermelho vivo nas ações e azul-gelo no foco e nos textos de destaque.",
+      "ui": {
+        "ground": "#0B1120",
+        "surface": "#111A2E",
+        "raised": "#18233B",
+        "line": "#26344F",
+        "edge": "#61779C",
+        "ink": "#EEF3F9",
+        "inkSoft": "#CAD6E4",
+        "muted": "#9DB0C8",
+        "action": "#C8102E",
+        "actionHover": "#A80D27",
+        "onAction": "#FFFFFF",
+        "focus": "#9FD8F7",
+        "highlight": "#BFE6FA",
+        "chip": "#22304D",
+        "chipInk": "#BFE6FA",
+        "success": "#7FD9A8",
+        "warning": "#F7CC5E",
+        "danger": "#FF9B73"
+      },
+      "marca": {
+        "base": "#C8102E",
+        "mark": "#FFFFFF",
+        "accent": "#9FD8F7",
+        "night": "#0B1120",
+        "wordDark": "#EEF3F9",
+        "word2Dark": "#FF8C94",
+        "paper": "#F2F6FA",
+        "wordLight": "#0E1A30",
+        "word2Light": "#B30F2A"
+      },
+      "campo": {
+        "pitch": "#2E7A46",
+        "stripe": "#2A713F",
+        "line": "#F2F5EF",
+        "draw": "#CFEFFF",
+        "away": "#EEF3F9",
+        "awayInk": "#0E1A30",
+        "tokenEdge": "#F2F5EF"
+      }
+    },
+    {
+      "id": "p3",
+      "nome": "Carmim, Grafite & Ouro",
+      "modo": "escuro",
+      "resumo": "A mais sóbria e neutra: fundos grafite sem matiz, carmim profundo nas ações, ouro-velho nos destaques e verde-sálvia só no foco. Lembra camisa de clube com escudo dourado.",
+      "ui": {
+        "ground": "#111214",
+        "surface": "#18191C",
+        "raised": "#212226",
+        "line": "#34363B",
+        "edge": "#7C7F87",
+        "ink": "#F3F1EC",
+        "inkSoft": "#D8D5CF",
+        "muted": "#ACA9A2",
+        "action": "#A0182F",
+        "actionHover": "#B81F38",
+        "onAction": "#FFF6F0",
+        "focus": "#A9BF8E",
+        "highlight": "#DDA94B",
+        "chip": "#2E2717",
+        "chipInk": "#DDA94B",
+        "success": "#7FD6A0",
+        "warning": "#F2D45C",
+        "danger": "#FF9580"
+      },
+      "marca": {
+        "base": "#A0182F",
+        "mark": "#FFF6F0",
+        "accent": "#DDA94B",
+        "night": "#111214",
+        "wordDark": "#F3F1EC",
+        "word2Dark": "#DDA94B",
+        "paper": "#F3F1EC",
+        "wordLight": "#1A1B1E",
+        "word2Light": "#A0182F"
+      },
+      "campo": {
+        "pitch": "#2E7A46",
+        "stripe": "#2A713F",
+        "line": "#F2F5EF",
+        "draw": "#F5D08A",
+        "away": "#F3F1EC",
+        "awayInk": "#1A1B1E",
+        "tokenEdge": "#F2F5EF"
+      }
+    }
+  ]
+}

@@ -18,8 +18,9 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 
 - Projeto na nuvem, região `sa-east-1` (ainda não criado).
 - Tabelas: `teams`, `players`, `formations` (só as customizadas).
-- Chave publishable + RLS por dono. Login pelo Supabase Auth, com e-mail e senha ou com Google.
-- O cadastro por e-mail abre a sessão na hora: o e-mail não é verificado e não há recuperação de senha, avisado no cadastro. Senha de 8 a 72 caracteres.
+- Chave publishable + RLS por dono. Login pelo Supabase Auth, somente com e-mail e senha; sem Google.
+- Cadastro com nome (1 a 80 caracteres após remover espaços das pontas), e-mail e senha. O nome é apenas de apresentação, salvo em `user_metadata.full_name`; a autorização continua pelo id da conta.
+- O cadastro abre a sessão na hora: o e-mail não é verificado e não há recuperação de senha nem autenticação em duas etapas, avisado no cadastro. Senha de 8 a 72 caracteres. No Supabase, Email deve estar ativo, Confirm email desligado e Google desativado.
 - **Visitante:** usa a prancheta e vê os times padrão, sem gravar nada no banco.
 - **Com conta:** cria times e formações que só ele vê, e pode excluir a conta, o que apaga esses dados.
 - A prancheta de um visitante continua ao entrar na conta. Ao sair, ou quando outra conta entra no mesmo navegador, a prancheta e o histórico de desfazer são limpos.
@@ -42,7 +43,7 @@ Acordada em 2026-11-04. Stack e convenções em [`../AGENTS.md`](../AGENTS.md).
 
 - `/`: prancheta.
 - `/times`: lista "Meus times" e "Série A 2026", CRUD dos próprios times, tabela de jogadores e importação (a importação também abre a partir da prancheta).
-- Não há rotas de login: o botão "Entrar" abre um diálogo (Entrar, Criar conta, Entrar com Google), e o menu da conta fica no cabeçalho.
+- Não há rotas de login: o botão "Entrar" abre um diálogo (Entrar, Criar conta), e o menu da conta fica no cabeçalho. Contas antigas sem nome continuam usando o e-mail como identificação visual.
 - Tabela de jogadores: titulares sempre primeiro. Ao abrir um time, ordena por posição, na ordem da lista de posições. Clicar em Nº, Nome ou Posição ordena por essa coluna dentro de titulares e de reservas; clicar de novo inverte.
 
 ## 4. Prancheta

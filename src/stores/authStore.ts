@@ -1,6 +1,6 @@
 import { isAuthRetryableFetchError, type User } from '@supabase/supabase-js'
 import { create } from 'zustand'
-import { authErrorMessage, type Credentials } from '@/lib/auth/credentials'
+import { authErrorMessage, signInSchema, signUpSchema, type Credentials, type SignUpCredentials } from '@/lib/auth/credentials'
 import { BOARD_STORAGE_KEY, serialize } from '@/lib/persistence'
 import { getSupabase } from '@/lib/supabase/client'
 import { deleteOwnAccount } from '@/lib/supabase/queries'
@@ -95,23 +95,16 @@ export async function initAuth(): Promise<void> {
   }
 }
 
-/** Vai para o Google e volta para a página atual. O autosave grava a prancheta ao sair da página. */
-export async function signInWithGoogle(): Promise<void> {
-  const { error } = await getSupabase().auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href },
-  })
-  if (error) throw new Error('Não foi possível abrir o login do Google. Tente de novo.')
-}
-
 export async function signInWithPassword(credentials: Credentials): Promise<void> {
-  const { error } = await getSupabase().auth.signInWithPassword(credentials)
+  const parsed = signInSchema.parse(credentials)
+  const { error } = await getSupabase().auth.signInWithPassword(parsed)
   if (error) throw new Error(authErrorMessage(error.code))
 }
 
 /** Sem confirmação de e-mail, o cadastro já abre a sessão. Sem sessão, a pessoa não entrou: não fingir sucesso. */
-export async function signUpWithPassword(credentials: Credentials): Promise<void> {
-  const { data, error } = await getSupabase().auth.signUp(credentials)
+export async function signUpWithPassword(credentials: SignUpCredentials): Promise<void> {
+  const { name, email, password } = signUpSchema.parse(credentials)
+  const { data, error } = await getSupabase().auth.signUp({ email, password, options: { data: { full_name: name } } })
   if (error) throw new Error(authErrorMessage(error.code))
   if (!data.session) throw new Error('Não foi possível criar a conta. Se este e-mail já tem cadastro, use Entrar.')
 }

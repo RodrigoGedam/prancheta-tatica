@@ -1,7 +1,7 @@
-import { AuthApiError, AuthRetryableFetchError } from '@supabase/supabase-js'
+import { AuthApiError, AuthRetryableFetchError, type User } from '@supabase/supabase-js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DrawShape } from '@/lib/geometry/shapes'
-import { claimBoard, initAuth, useAuthStore } from './authStore'
+import { claimBoard, displayName, initAuth, signInWithPassword, signUpWithPassword, useAuthStore } from './authStore'
 import { beginHistoryBatch, endHistoryBatch, undo, useBoardStore } from './boardStore'
 
 type AuthListener = (event: string, session: { user: { id: string } } | null) => void
@@ -9,12 +9,16 @@ type AuthListener = (event: string, session: { user: { id: string } } | null) =>
 const auth = vi.hoisted(() => ({
   result: { data: { session: null as { user: { id: string } } | null }, error: null as Error | null },
   listener: null as AuthListener | null,
+  signInWithPassword: vi.fn(),
+  signUp: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase/client', () => ({
   getSupabase: () => ({
     auth: {
       getSession: () => Promise.resolve(auth.result),
+      signInWithPassword: auth.signInWithPassword,
+      signUp: auth.signUp,
       onAuthStateChange: (listener: AuthListener) => {
         auth.listener = listener
       },
@@ -35,6 +39,59 @@ beforeEach(() => {
   useAuthStore.setState({ user: null, sessionUnknown: false })
   auth.result = { data: { session: null }, error: null }
   auth.listener = null
+  auth.signInWithPassword.mockReset().mockResolvedValue({ error: null })
+  auth.signUp.mockReset().mockResolvedValue({ data: { session: { user: { id: 'A' } } }, error: null })
+})
+
+describe('login e cadastro com senha', () => {
+  it('entrar envia só e-mail normalizado e senha, sem exigir nome ou tamanho novo de senha', async () => {
+    await signInWithPassword({ email: '  Ana@Exemplo.COM ', password: '1' })
+    expect(auth.signInWithPassword).toHaveBeenCalledExactlyOnceWith({ email: 'ana@exemplo.com', password: '1' })
+  })
+
+  it('cadastro envia o nome como full_name nos metadados', async () => {
+    await signUpWithPassword({ name: '  João da Silva  ', email: '  Ana@Exemplo.COM ', password: ' 1234567 ' })
+    expect(auth.signUp).toHaveBeenCalledExactlyOnceWith({
+      email: 'ana@exemplo.com', password: ' 1234567 ', options: { data: { full_name: 'João da Silva' } },
+    })
+  })
+
+  it('recusa credenciais inválidas antes de chamar o Supabase', async () => {
+    await expect(signInWithPassword({ email: 'inválido', password: '1' })).rejects.toThrow()
+    await expect(signUpWithPassword({ name: ' ', email: 'ana@exemplo.com', password: '12345678' })).rejects.toThrow()
+    await expect(signUpWithPassword({ name: 'Ana', email: 'ana@exemplo.com', password: 'curta' })).rejects.toThrow()
+    expect(auth.signInWithPassword).not.toHaveBeenCalled()
+    expect(auth.signUp).not.toHaveBeenCalled()
+  })
+
+  it('traduz erros do Supabase no login e cadastro', async () => {
+    auth.signInWithPassword.mockResolvedValueOnce({ error: new AuthApiError('invalid', 400, 'invalid_credentials') })
+    auth.signUp.mockResolvedValueOnce({ data: { session: null }, error: new AuthApiError('exists', 400, 'user_already_exists') })
+    await expect(signInWithPassword({ email: 'ana@exemplo.com', password: '12345678' })).rejects.toThrow('E-mail ou senha incorretos.')
+    await expect(signUpWithPassword({ name: 'Ana', email: 'ana@exemplo.com', password: '12345678' })).rejects.toThrow('Este e-mail já tem cadastro. Use Entrar.')
+  })
+
+  it('não considera um cadastro sem sessão como sucesso', async () => {
+    auth.signUp.mockResolvedValueOnce({ data: { session: null }, error: null })
+    await expect(signUpWithPassword({ name: 'Ana', email: 'ana@exemplo.com', password: '12345678' })).rejects.toThrow('Não foi possível criar a conta.')
+  })
+})
+
+describe('nome de apresentação', () => {
+  const user = (fullName?: unknown, email?: string): User => ({
+    id: 'A', app_metadata: {}, user_metadata: { full_name: fullName }, aud: 'authenticated', created_at: '', email,
+  })
+
+  it('usa o nome preenchido e normalizado', () => {
+    expect(displayName(user('  João da Silva  ', 'ana@exemplo.com'))).toBe('João da Silva')
+  })
+
+  it('mantém o fallback de contas antigas ou metadados de tipo inválido', () => {
+    for (const name of [undefined, null, 42, {}, '', '   ']) {
+      expect(displayName(user(name, 'ana@exemplo.com'))).toBe('ana@exemplo.com')
+    }
+    expect(displayName(user())).toBe('Minha conta')
+  })
 })
 
 describe('sessão ao abrir o app', () => {

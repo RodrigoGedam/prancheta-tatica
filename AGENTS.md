@@ -5,7 +5,7 @@ Instruções para qualquer agente de código (Claude Code, Codex) que trabalhe n
 
 ## O projeto
 
-Prancheta Tática é um app web para montar táticas de futebol de campo (11 contra 11), desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (e-mail e senha ou Google) libera times e formações privados.
+Prancheta Tática é um app web para montar táticas de futebol de campo (11 contra 11), desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (cadastro com nome, e-mail e senha) libera times e formações privados.
 
 - **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
@@ -21,7 +21,7 @@ Prancheta Tática é um app web para montar táticas de futebol de campo (11 con
 - Konva via react-konva (nenhuma outra lib de canvas)
 - Zustand + zundo (undo/redo)
 - Papa Parse (CSV)
-- Supabase com chave publishable, Auth com e-mail e senha ou Google e RLS por dono (`user_id` nulo = time padrão)
+- Supabase com chave publishable, Auth só com e-mail e senha (sem Google, sem confirmação de e-mail) e RLS por dono (`user_id` nulo = time padrão)
 - Vitest para testes
 
 ## Comandos
@@ -54,6 +54,7 @@ src/
   lib/colors/          # contraste do goleiro, cores parecidas (puro)
   lib/persistence/     # schema e versionamento do localStorage (puro)
   lib/supabase/        # client e queries
+  lib/auth/            # validação de credenciais e mensagens de erro do login (puro)
   lib/players/          # ordenação do elenco (puro)
   lib/squads/           # elenco da Wikipédia: parser, titulares e CSV (puro)
 supabase/migrations/   # SQL
