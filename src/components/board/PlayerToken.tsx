@@ -112,7 +112,7 @@ export function PlayerToken({
       </Group>
       {showBadge && stackSize > 1 ? (
         <Group x={TOKEN_RADIUS * 0.85} y={-TOKEN_RADIUS * 0.85} listening={false}>
-          <Circle radius={1.05} fill="#FFC9D6" stroke="#12080C" strokeWidth={0.2} />
+          <Circle radius={1.05} fill="#F3D6A6" stroke="#150B0F" strokeWidth={0.2} />
           <Text
             text={`+${stackSize - 1}`}
             x={-1.05}
@@ -124,7 +124,7 @@ export function PlayerToken({
             fontFamily="Barlow, sans-serif"
             fontStyle="700"
             fontSize={1}
-            fill="#12080C"
+            fill="#150B0F"
           />
         </Group>
       ) : null}

@@ -28,7 +28,7 @@ export interface ButtonProps extends ComponentProps<'button'> {
 export function buttonClasses(variant: ButtonVariant = 'secondary', size: ButtonSize = 'md'): string {
   return cn(
     'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap no-underline transition-colors',
-    'outline-none focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
+    'outline-none focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-not-allowed disabled:opacity-50',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0',
     variants[variant],
     sizes[size],

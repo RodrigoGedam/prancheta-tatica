@@ -35,7 +35,7 @@ function AuthContent({ onDone }: { onDone: () => void }) {
             aria-selected={mode === tab.id}
             onClick={() => setMode(tab.id)}
             className={cn(
-              'h-8 cursor-pointer rounded-md border-0 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+              'h-8 cursor-pointer rounded-md border-0 text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
               mode === tab.id ? 'bg-surface text-ink' : 'bg-transparent text-muted hover:text-ink',
             )}
           >

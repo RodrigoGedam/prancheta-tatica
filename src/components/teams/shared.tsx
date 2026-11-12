@@ -19,7 +19,7 @@ export function firstFreeColor(used: readonly string[]): string {
 }
 
 export const inputClass =
-  'h-10 rounded-lg border border-line-strong bg-control px-3 text-[15px] text-ink outline-none placeholder:text-faint focus:border-accent/70 aria-invalid:border-danger'
+  'h-10 rounded-lg border border-line-strong bg-control px-3 text-[15px] text-ink outline-none placeholder:text-faint focus:border-focus aria-invalid:border-danger'
 
 export const labelClass = 'text-xs font-semibold tracking-[0.06em] text-muted uppercase'
 
@@ -70,7 +70,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
               title={c.label}
               onClick={() => onChange(c.hex)}
               className={cn(
-                'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
                 selected ? 'border-accent' : 'border-surface',
               )}
               style={{ background: c.hex, boxShadow: selected ? undefined : '0 0 0 1px var(--color-edge)' }}

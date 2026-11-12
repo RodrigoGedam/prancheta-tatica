@@ -6,7 +6,7 @@ import { useBoardStore } from '@/stores/boardStore'
 import { restartBoard, restoreBoard } from './boardReset'
 
 const optionClass =
-  'flex cursor-pointer flex-col gap-0.5 rounded-lg border border-line-strong bg-control px-3 py-2.5 text-left text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-control'
+  'flex cursor-pointer flex-col gap-0.5 rounded-lg border border-line-strong bg-control px-3 py-2.5 text-left text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-control'
 
 /** Botão do cabeçalho: voltar ao início (mantém os times) ou reiniciar tudo. Os dois podem ser desfeitos. */
 export function ResetBoardButton() {
@@ -23,7 +23,7 @@ export function ResetBoardButton() {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent/60"
+          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-focus/70"
         >
           <RotateCcwIcon size={15} aria-hidden="true" />
           Resetar

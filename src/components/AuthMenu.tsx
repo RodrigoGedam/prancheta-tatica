@@ -8,7 +8,7 @@ import { deleteAccount, displayName, signOut, useAuthStore } from '@/stores/auth
 import { AuthDialog } from './AuthDialog'
 
 const menuItem =
-  'flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm outline-none hover:bg-control focus-visible:ring-2 focus-visible:ring-accent/60'
+  'flex cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm outline-none hover:bg-control focus-visible:ring-2 focus-visible:ring-focus/70'
 
 /** Botão que abre o diálogo de entrar, usado no cabeçalho e nos convites para quem não tem conta. */
 export function SignInButton({ variant = 'secondary', label = 'Entrar' }: { variant?: 'primary' | 'secondary'; label?: string }) {

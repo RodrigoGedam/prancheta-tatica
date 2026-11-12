@@ -46,7 +46,7 @@ export function PlayersTable({ players, numberColor, actions }: PlayersTableProp
     helper.accessor('position', {
       header: 'Posição',
       cell: (info) => (
-        <span className="rounded bg-chip px-2 py-0.5 text-xs font-semibold">{info.getValue()}</span>
+        <span className="rounded bg-chip px-2 py-0.5 text-xs font-semibold text-accent">{info.getValue()}</span>
       ),
     }),
     helper.accessor('is_starter', {

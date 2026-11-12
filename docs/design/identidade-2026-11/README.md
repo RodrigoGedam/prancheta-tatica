@@ -1,6 +1,6 @@
 # Identidade visual — propostas de novembro de 2026
 
-Três logos e três paletas para a Prancheta Tática, para comparar. **Nada disto foi aplicado no app**: `src/styles.css`, `public/favicon.svg` e o resto do código continuam como estavam.
+Três logos e três paletas para a Prancheta Tática, para comparar. **Escolha do Rodrigo em 12/11/2026: logo 01 Jogada + paleta Bordô & Areia, já aplicados no app** (`src/styles.css`, `public/favicon.svg` e o símbolo no cabeçalho, em `src/routes/__root.tsx`). As outras propostas ficam aqui como registro.
 
 Abra [`galeria.html`](galeria.html) para ver tudo lado a lado: os logos em fundo escuro, fundo claro, tamanhos pequenos e em uma cor; cada logo em cada paleta; e um mockup da prancheta (cabeçalho, campo verde com formação, banco, botões e mensagens) para cada paleta.
 

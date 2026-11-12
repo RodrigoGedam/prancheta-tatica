@@ -134,7 +134,7 @@ function BenchSection({ model }: { model: SideModel }) {
                   {tokenMark(p)}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">{p.nickname ?? p.name}</span>
-                <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold text-ink-soft">
+                <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold text-accent">
                   {p.position}
                 </span>
               </li>

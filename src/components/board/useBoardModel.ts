@@ -62,7 +62,7 @@ export function useSideModel(side: Side): SideModel {
       return player ? [{ player, placement }] : []
     })
     const placedIds = new Set(onPitch.map((p) => p.player.id))
-    const color = state.colorOverride ?? team?.color ?? '#A08791'
+    const color = state.colorOverride ?? team?.color ?? '#A8928A'
     const formation = catalog.resolve(state.formationId)
     return {
       side,

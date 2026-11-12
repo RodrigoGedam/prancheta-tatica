@@ -1,33 +1,35 @@
 @import 'tailwindcss';
 
 /*
- * Paleta bordô-noturno. O bordô (action) preenche ações e seleção; o rosé-vinho
- * (accent) fica com linhas, foco e textos de destaque, onde o bordô não teria contraste.
+ * Paleta Bordô & Areia (docs/design/identidade-2026-11/paletas.json, p1). O bordô (action)
+ * preenche ações e seleção; a areia (accent) fica com linhas e textos de destaque, onde o
+ * bordô não teria contraste; o teal (focus) é só do indicador de foco.
  */
 @theme {
   --font-sans: 'Barlow', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
 
-  --color-ground: #12080c;
-  --color-surface: #1a0c12;
-  --color-surface-2: #221119;
-  --color-control: #2a1520;
-  --color-chip: #3d2130;
-  --color-line: #3a1f2b;
-  --color-line-strong: #4a2a37;
-  --color-edge: #5c3a49;
-  --color-glow: #33101f;
-  --color-ink: #f6ecef;
-  --color-ink-soft: #dcc8cf;
-  --color-muted: #b89fa9;
-  --color-faint: #a08791;
-  --color-accent: #f08aa3;
-  --color-action: #9e1c44;
-  --color-action-hover: #b42752;
-  --color-on-accent: #fff5f7;
-  --color-success: #9adba8;
-  --color-warning: #facc15;
-  --color-danger: #ff9a76;
+  --color-ground: #150b0f;
+  --color-surface: #1e1117;
+  --color-surface-2: #28171f;
+  --color-control: #2f1c25;
+  --color-chip: #3a2a22;
+  --color-line: #3e2631;
+  --color-line-strong: #8c6878;
+  --color-edge: #8c6878;
+  --color-glow: #30141f;
+  --color-ink: #f7eee6;
+  --color-ink-soft: #e2d2c6;
+  --color-muted: #bfa99d;
+  --color-faint: #a8928a;
+  --color-accent: #e7c79a;
+  --color-focus: #5ccbbe;
+  --color-action: #8e1b3d;
+  --color-action-hover: #a6244b;
+  --color-on-accent: #fff4ec;
+  --color-success: #93d9a6;
+  --color-warning: #f2c55c;
+  --color-danger: #ff967a;
 
   --color-pitch: #2e7a46;
   --color-pitch-stripe: #2a713f;

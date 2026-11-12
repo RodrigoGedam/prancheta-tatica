@@ -11,7 +11,7 @@ import { ResetBoardButton } from './ResetBoardButton'
 import { SIDE_LABEL, useSideActions, useSideModel, type SideModel } from './useBoardModel'
 
 const selectClass =
-  'h-9 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none focus:border-accent/70 disabled:opacity-50'
+  'h-9 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none focus:border-focus disabled:opacity-50'
 const MANAGE = '__manage__'
 
 /** Seletores de time e formação (centro do cabeçalho, só na prancheta). */

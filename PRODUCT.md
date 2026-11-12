@@ -36,7 +36,7 @@ Os 20 clubes da Série A 2026 já vêm carregados, com elenco e titulares, entã
 ## Brand Commitments
 
 - Nome oficial: **Prancheta Tática**.
-- Paleta pedida pelo dono do projeto: **bordô-noturno**.
+- Paleta escolhida pelo dono do projeto (12/11/2026): **Bordô & Areia**, evolução do bordô-noturno, com o logo **Jogada**.
 - Voz direta, de vestiário: português do Brasil simples, com o vocabulário do futebol (titular, banco, formação), sem floreio.
 
 ## Evidence on Hand

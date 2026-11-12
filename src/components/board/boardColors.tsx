@@ -44,7 +44,7 @@ export function ColorOptions({ colors, value, onChoose, suggestion }: ColorOptio
             title={suggested ? `${hex} (sugestão)` : hex}
             onClick={() => onChoose(hex)}
             className={cn(
-              'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+              'size-7 cursor-pointer rounded-full border-[3px] p-0 outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
               selected ? 'border-accent' : 'border-surface',
             )}
             style={{ background: hex, boxShadow: suggested ? '0 0 0 2px var(--color-accent)' : '0 0 0 1px var(--color-edge)' }}
@@ -72,7 +72,7 @@ export function BoardColorButton({ model }: { model: SideModel }) {
           disabled={!model.team}
           aria-label={label}
           title={label}
-          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 outline-none hover:bg-control focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-default disabled:hover:bg-transparent"
+          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 outline-none hover:bg-control focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-default disabled:hover:bg-transparent"
         >
           <span
             aria-hidden="true"

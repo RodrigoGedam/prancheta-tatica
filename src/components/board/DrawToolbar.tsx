@@ -26,7 +26,7 @@ const WIDTHS: readonly { id: StrokeWidth; label: string; px: number }[] = [
 ]
 
 const historyButton =
-  'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-ink-soft outline-none hover:bg-control hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-default disabled:bg-transparent disabled:text-faint'
+  'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-ink-soft outline-none hover:bg-control hover:text-ink focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-default disabled:bg-transparent disabled:text-faint'
 
 /** Muda o estilo da ferramenta e, se houver um desenho selecionado, aplica nele também. */
 function applyStyle(patch: Partial<ReturnType<typeof useToolStore.getState>['style']>) {
@@ -62,7 +62,7 @@ export function DrawToolbar() {
               title={`${t.label} (${t.key})`}
               onClick={() => setTool(t.id)}
               className={cn(
-                'relative flex size-11 cursor-pointer items-center justify-center rounded-[10px] border p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'relative flex size-11 cursor-pointer items-center justify-center rounded-[10px] border p-0 outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
                 active ? 'border-accent bg-action text-on-accent' : 'border-line-strong bg-control text-ink hover:bg-surface-2',
               )}
             >
@@ -83,7 +83,7 @@ export function DrawToolbar() {
         onClick={clearDrawings}
         aria-label="Apagar todos os desenhos"
         title="Apagar todos os desenhos"
-        className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-line-strong bg-control p-0 text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent/60 disabled:cursor-default disabled:text-faint disabled:hover:bg-control"
+        className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-line-strong bg-control p-0 text-ink outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-default disabled:text-faint disabled:hover:bg-control"
       >
         <Trash2Icon size={20} aria-hidden="true" />
       </button>
@@ -100,7 +100,7 @@ export function DrawToolbar() {
           applyStyle({ dashed: useToolStore.getState().style.dashed })
         }}
         className={cn(
-          'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border bg-control p-0 text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+          'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border bg-control p-0 text-ink outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
           style.dashed ? 'border-accent text-accent' : 'border-line-strong',
         )}
       >
@@ -125,7 +125,7 @@ export function DrawToolbar() {
                 applyStyle({ color: c.hex })
               }}
               className={cn(
-                'size-5 cursor-pointer rounded-full border-2 p-0 shadow-[inset_0_0_0_1px_var(--color-ground)] outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'size-5 cursor-pointer rounded-full border-2 p-0 shadow-[inset_0_0_0_1px_var(--color-ground)] outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
                 active ? 'border-accent' : 'border-line-strong',
               )}
               style={{ background: c.hex }}
@@ -150,7 +150,7 @@ export function DrawToolbar() {
                 applyStyle({ width: w.id })
               }}
               className={cn(
-                'flex h-[22px] w-11 cursor-pointer items-center justify-center rounded-md border bg-control p-0 outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                'flex h-[22px] w-11 cursor-pointer items-center justify-center rounded-md border bg-control p-0 outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
                 active ? 'border-accent' : 'border-line-strong',
               )}
             >
