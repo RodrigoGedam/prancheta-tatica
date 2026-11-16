@@ -1,9 +1,13 @@
 node_modules
 dist
 *.local
-.env.local
+.env
+.env.*
+!.env.example
 coverage
 .DS_Store
 .vite
 supabase/.temp
 .cache
+docs/memoria.md
+docs/verificacao-painel.md

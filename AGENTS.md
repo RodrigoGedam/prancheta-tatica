@@ -7,7 +7,7 @@ Instruções para qualquer agente de código (Claude Code, Codex) que trabalhe n
 
 Prancheta Tática é um app web para montar táticas de futebol de campo (11 contra 11), desktop-only, projeto de portfólio. Visitantes usam a prancheta com os times padrão; o login (cadastro com nome, e-mail e senha) libera times e formações privados.
 
-- **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
+- **Estado atual, decisões e próxima etapa: `docs/memoria.md`. Leia primeiro ao iniciar uma sessão e atualize ao final.** É um arquivo local, fora do git (assim como `docs/verificacao-painel.md`).
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
 - Arquitetura, motivo da stack e regras do código (para desenvolvedores): [`docs/arquitetura.md`](docs/arquitetura.md). Mantenha atualizado (regra 7).
 - Plano de implementação e divisão de tarefas entre agentes: [`docs/plano-implementacao.md`](docs/plano-implementacao.md).

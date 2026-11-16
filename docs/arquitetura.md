@@ -5,7 +5,7 @@ Este documento explica por que a stack é esta e por que o código é escrito de
 O que ele não repete:
 
 - O comportamento do produto está em [`especificacao.md`](especificacao.md), que é a fonte da verdade.
-- O histórico de sessões, as decisões datadas e o plano até o deploy estão em [`memoria.md`](memoria.md).
+- O histórico de sessões, as decisões datadas e o plano até o deploy estão em `memoria.md`, um diário de trabalho local que não é versionado (assim como `verificacao-painel.md`).
 - As etapas e a divisão de trabalho entre agentes estão em [`plano-implementacao.md`](plano-implementacao.md).
 - As regras para agentes de código estão em [`../AGENTS.md`](../AGENTS.md).
 
@@ -444,7 +444,7 @@ O que o código garante em volta disso:
 - `signInSchema` exige só que a senha esteja preenchida. O tamanho de 8 a 72 vale apenas no cadastro, para nunca barrar no login uma senha já aceita antes.
 - `signUpWithPassword` trata resposta sem sessão como falha. Com a confirmação de e-mail ligada no painel, o cadastro mostra erro em vez de fingir que a pessoa entrou.
 
-A configuração do provedor fica no painel do Supabase, fora das migrations. O estado dela e o checklist de conferência estão em [`memoria.md`](memoria.md) e [`verificacao-painel.md`](verificacao-painel.md).
+A configuração do provedor fica no painel do Supabase, fora das migrations. O estado dela e o checklist de conferência estão em `memoria.md` e `verificacao-painel.md`.
 
 ### `claimBoard`: a prancheta tem dono
 
@@ -651,7 +651,7 @@ Decidido e registrado, para não implementar: confirmação de e-mail, recupera�
 
 ### Pendências antes do deploy
 
-A lista completa, com responsáveis, está na seção 5 de [`memoria.md`](memoria.md). As que afetam a arquitetura:
+A lista completa, com responsáveis, está na seção 5 de `memoria.md`. As que afetam a arquitetura:
 
 - Não há configuração de hospedagem: falta o redirecionamento da SPA para `index.html` e os cabeçalhos de segurança (`frame-ancestors`, CSP).
 - A rota raiz não define `errorComponent`.
