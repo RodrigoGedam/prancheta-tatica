@@ -1,3 +1,4 @@
+// Diálogo escrito à mão sobre o Dialog do radix-ui (não gerado pelo CLI do shadcn).
 import type { ComponentProps, ReactNode } from 'react'
 import { XIcon } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'

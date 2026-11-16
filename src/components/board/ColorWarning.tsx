@@ -10,9 +10,12 @@ import type { SideModel } from './useBoardModel'
  * na prancheta se confundem; depois de fechado, só reabre se o par de times ou de cores mudar.
  */
 export function ColorWarning({ home, away }: { home: SideModel; away: SideModel }) {
+  // Guarda a combinação (times e cores) que a pessoa já dispensou; uma combinação nova volta a avisar.
   const [dismissed, setDismissed] = useState<string | null>(null)
   const key = `${home.state.teamId}|${away.state.teamId}|${home.color}|${away.color}`
   const open = Boolean(home.team && away.team) && areColorsSimilar(home.color, away.color) && dismissed !== key
+  // Sugestão para o visitante: uma alternativa diferente da cor atual dele e que não se confunda com o
+  // mandante nem com o goleiro do mandante.
   const suggestion = pickAlternativeColor(
     home.color,
     ALTERNATIVES.filter((c) => !areColorsSimilar(c, away.color)),

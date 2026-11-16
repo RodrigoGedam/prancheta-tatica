@@ -1,9 +1,15 @@
+/**
+ * Formato salvo da prancheta: converte JSON em estado validado sem acessar o localStorage.
+ * Recupera partes válidas isoladamente para um item corrompido não apagar o restante.
+ */
 import { z } from 'zod'
 import type { Placement } from '@/lib/board/placement'
 import type { Side } from '@/lib/geometry/pitch'
 import { drawShapeSchema, type DrawShape } from '@/lib/geometry/shapes'
 
+/** Chave usada pelo autosave para a única prancheta deste navegador. */
 export const BOARD_STORAGE_KEY = 'prancheta-tatica:prancheta'
+/** Versão do envelope salvo; mudanças incompatíveis exigem uma migração. */
 export const BOARD_SCHEMA_VERSION = 1
 export const DEFAULT_FORMATION_ID = '4-3-3'
 export interface PersistedSide {
@@ -20,10 +26,13 @@ export interface BoardSnapshot {
   shapes: DrawShape[]
 }
 export type Migration = (data: unknown) => unknown
+/** Cada chave N transforma os dados da versão N para N + 1. */
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {}
+/** Cria um lado independente, ainda sem time carregado nem jogadores posicionados. */
 export function emptySide(formationId: string = DEFAULT_FORMATION_ID): PersistedSide {
   return { teamId: null, formationId, colorOverride: null, initialized: false, placements: [] }
 }
+/** Estado inicial independente, também usado quando o conteúdo salvo não pode ser recuperado. */
 export function emptySnapshot(): BoardSnapshot {
   return { sides: { home: emptySide(), away: emptySide() }, hidden: { home: false, away: false }, nextZ: 1, shapes: [] }
 }
@@ -45,6 +54,7 @@ function readSide(value: unknown): PersistedSide {
     const parsed = placementSchema.safeParse(value)
     return parsed.success ? [parsed.data] : []
   })
+  // Um jogador duplicado mantém a posição de maior z, a camada que aparecia por cima.
   const winners = new Map<string, Placement>()
   for (const p of placements) {
     const previous = winners.get(p.playerId)
@@ -53,9 +63,11 @@ function readSide(value: unknown): PersistedSide {
   side.placements = placements.filter(p => winners.get(p.playerId) === p)
   return side
 }
+/** Empacota o estado com sua versão para permitir migrações nas próximas leituras. */
 export function serialize(snapshot: BoardSnapshot): string {
   return JSON.stringify({ version: BOARD_SCHEMA_VERSION, data: snapshot })
 }
+/** Recupera campos válidos do JSON; conteúdo ilegível ou versão sem migração devolve o estado inicial. */
 export function deserialize(raw: string | null | undefined): BoardSnapshot {
   try {
     if (!raw) return emptySnapshot()
@@ -77,6 +89,7 @@ export function deserialize(raw: string | null | undefined): BoardSnapshot {
       ids.add(parsed.data.id)
       return [parsed.data]
     })
+    // A próxima camada precisa superar todas as salvas para o próximo token ficar por cima.
     let maximum = 0
     for (const p of [...home.placements, ...away.placements]) maximum = Math.max(maximum, p.z)
     const nextZ = typeof data.nextZ === 'number' && Number.isInteger(data.nextZ) && data.nextZ >= 1 && data.nextZ > maximum
@@ -86,6 +99,7 @@ export function deserialize(raw: string | null | undefined): BoardSnapshot {
     return emptySnapshot()
   }
 }
+/** Aplica migrações em sequência; versão inválida, etapa ausente ou exceção devolve null. */
 export function migrate(
   version: number,
   data: unknown,

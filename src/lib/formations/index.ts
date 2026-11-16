@@ -16,6 +16,7 @@ function formation(id: FixedFormationId, rows: readonly (readonly [string, numbe
 }
 
 const center = PITCH.width / 2
+/** Vagas em metros para o mandante; a ordem da lista define o número de cada slot (0 a 10). */
 export const FIXED_FORMATIONS: readonly FormationDef[] = [
   formation('4-4-2', [
     ['GOL', center, 100], ['LD', 60, 88], ['ZAG', 44, 88], ['ZAG', 24, 88], ['LE', 8, 88],
@@ -39,13 +40,9 @@ export const FIXED_FORMATIONS: readonly FormationDef[] = [
   ]),
 ]
 
+/** Busca no catálogo fixo; ids de formações customizadas ou desconhecidos devolvem undefined. */
 export function getFixedFormation(id: string): FormationDef | undefined {
   return FIXED_FORMATIONS.find(formation => formation.id === id)
-}
-
-/** Espelha os slots para o time de cima. Não altera a entrada. */
-export function mirrorFormation(formation: FormationDef): FormationDef {
-  return { ...formation, slots: formation.slots.map(slot => ({ ...slot, ...mirror(slot) })) }
 }
 
 /** Coordenada de um slot no lado pedido (home = como está; away = espelhado). */
@@ -69,6 +66,7 @@ export interface AssignmentResult<P extends AssignablePlayer> {
   unassigned: P[]
 }
 
+// Cada vaga aceita estas posições alternativas em ordem de preferência, após tentar a posição exata.
 const compatible: Record<Position, readonly Position[]> = {
   GOL: [], LD: ['MD'], LE: ['ME'],
   ZAG: ['VOL'], VOL: ['MC', 'ZAG'], MC: ['VOL', 'MEI'], MEI: ['MC', 'SA'],
@@ -76,6 +74,7 @@ const compatible: Record<Position, readonly Position[]> = {
   PE: ['ME', 'SA', 'ATA'], SA: ['MEI', 'ATA'], ATA: ['SA', 'PD', 'PE'],
 }
 
+/** Distribui por posição exata, compatível e, por fim, vagas livres; preserva a ordem dos jogadores que sobram. */
 export function assignPlayersToSlots<P extends AssignablePlayer>(
   players: readonly P[],
   slots: readonly FormationSlot[],
@@ -92,6 +91,7 @@ export function assignPlayersToSlots<P extends AssignablePlayer>(
   slots.forEach((slot, i) => {
     if (isPosition(slot.position)) fill(i, player => player.position === slot.position)
   })
+  // Tenta a mesma prioridade em todas as vagas antes de passar à alternativa seguinte.
   for (let rank = 0; rank < 3; rank++) {
     slots.forEach((slot, i) => {
       if (!isPosition(slot.position)) return
@@ -100,6 +100,7 @@ export function assignPlayersToSlots<P extends AssignablePlayer>(
     })
   }
   const remainingOrder = slots.map((slot, i) => ({ slot, i }))
+  // No preenchimento final, prioriza jogadores de linha; a vaga GOL fica para o fim.
   for (const { i } of remainingOrder.filter(({ slot }) => slot.position !== 'GOL')) {
     fill(i, player => player.position !== 'GOL')
     fill(i, () => true)
@@ -116,6 +117,7 @@ export function assignPlayersToSlots<P extends AssignablePlayer>(
 
 export type ValidationResult = { ok: true; slots: FormationSlot[] } | { ok: false; errors: string[] }
 
+/** Confere 11 vagas únicas, um goleiro e posições dentro do campo; devolve erros ou slots ordenados. */
 export function validateCustomFormation(slots: unknown): ValidationResult {
   if (!Array.isArray(slots)) return { ok: false, errors: ['Formato de formação inválido.'] }
   const errors: string[] = []
@@ -162,6 +164,7 @@ export function buildCustomSlots(entries: readonly PlacedEntry[], side: Side): F
     return { position: entry.position.toUpperCase(), x: Math.round(point.x * 10) / 10, y: Math.round(point.y * 10) / 10 }
   }).sort((a, b) => {
     if ((a.position === 'GOL') !== (b.position === 'GOL')) return a.position === 'GOL' ? -1 : 1
+    // Diferenças menores que 0,5 m contam como a mesma linha, ordenada da direita para a esquerda.
     return Math.abs(a.y - b.y) < 0.5 ? b.x - a.x : b.y - a.y
   }).map((entry, slot) => ({ ...entry, slot }))
 }

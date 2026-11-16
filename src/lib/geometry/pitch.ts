@@ -2,16 +2,15 @@
  * Geometria do campo (lógica pura). Coordenadas em METROS.
  * Campo vertical: x = largura (0..68, esquerda → direita), y = comprimento (0..105, cima → baixo).
  * Mandante ("home") joga embaixo; visitante ("away") em cima.
- *
- * CONTRATO — implementação delegada ao Codex (tarefa C1). Não mude as assinaturas.
  */
 
 export type Point = { x: number; y: number }
 export type Side = 'home' | 'away'
 
+/** Dimensões do campo em metros; a origem fica no canto superior esquerdo. */
 export const PITCH = { width: 68, length: 105 } as const
 
-/** Medidas oficiais das marcações (IFAB), em metros. */
+/** Medidas das marcações em metros; o raio dos pontos define sua aparência na prancheta. */
 export const MARKINGS = {
   lineWidth: 0.12,
   centerCircleRadius: 9.15,
@@ -38,12 +37,7 @@ export function computeScale(containerWidth: number, containerHeight: number, ru
   return Math.min(containerWidth / (PITCH.width + 2 * runoff), containerHeight / (PITCH.length + 2 * runoff))
 }
 
-/** Metros → pixels do Stage, considerando o deslocamento do `runoff`. */
-export function metersToPx(p: Point, scale: number, runoff: number = RUNOFF): Point {
-  return { x: (p.x + runoff) * scale, y: (p.y + runoff) * scale }
-}
-
-/** Inverso exato de `metersToPx`. */
+/** Converte pixels do canvas em metros do campo, descontando a margem; exige escala positiva. */
 export function pxToMeters(p: Point, scale: number, runoff: number = RUNOFF): Point {
   return { x: p.x / scale - runoff, y: p.y / scale - runoff }
 }
@@ -53,19 +47,9 @@ export function mirror(p: Point): Point {
   return { x: PITCH.width - p.x, y: PITCH.length - p.y }
 }
 
-/** Converte um ponto definido para o time de baixo para o lado pedido. */
-export function toSide(p: Point, side: Side): Point {
-  return side === 'home' ? { ...p } : mirror(p)
-}
-
 /** Dentro do campo (linhas inclusas), com `margin` metros de tolerância para fora. */
 export function isInsidePitch(p: Point, margin: number = 0): boolean {
   return p.x >= -margin && p.x <= PITCH.width + margin && p.y >= -margin && p.y <= PITCH.length + margin
-}
-
-/** Limita o ponto ao retângulo do campo. */
-export function clampToPitch(p: Point): Point {
-  return { x: Math.max(0, Math.min(PITCH.width, p.x)), y: Math.max(0, Math.min(PITCH.length, p.y)) }
 }
 
 /**

@@ -1,13 +1,17 @@
+import { memo } from 'react'
 import type { Context } from 'konva/lib/Context'
 import type { Shape as KonvaShape } from 'konva/lib/Shape'
-import { Circle, Group, Line, Rect, Shape } from 'react-konva'
 import { MARKINGS, PITCH, RUNOFF, penaltyArcHalfAngleDeg } from '@/lib/geometry/pitch'
+import { Circle, Group, Line, Rect, Shape } from './konvaNodes'
 
+// Cores literais: o canvas não lê as variáveis CSS do tema.
 const LINE_COLOR = 'rgba(255,255,255,0.82)'
 const GRASS = '#2e7a46'
 const STRIPE = '#2a713f'
 const RUNOFF_GRASS = '#276a3b'
+/** Faixas do gramado ao longo do comprimento (uma sim, outra não, mais escura). */
 const STRIPES = 10
+/** Profundidade (m) do gol, desenhado fora da linha de fundo. */
 const GOAL_DEPTH = 1.5
 /** Espessura mínima visível das linhas, em pixels. */
 const MIN_LINE_PX = 1.5
@@ -18,8 +22,12 @@ const DEG = Math.PI / 180
 
 type Props = { scale: number }
 
-/** Campo de futebol desenhado em metros; o Group converte para pixels. */
-export function PitchMarkings({ scale }: Props) {
+/**
+ * Campo de futebol desenhado em metros; o Group converte para pixels.
+ * Com `memo`, só é redesenhado quando a escala muda (não a cada hover ou arrasto).
+ */
+export const PitchMarkings = memo(function PitchMarkings({ scale }: Props) {
+  // A linha oficial em metros, mas nunca mais fina que MIN_LINE_PX na tela (dividir por scale converte px em m).
   const stroke = Math.max(MARKINGS.lineWidth, MIN_LINE_PX / scale)
   const line = { stroke: LINE_COLOR, strokeWidth: stroke, perfectDrawEnabled: false }
 
@@ -30,6 +38,7 @@ export function PitchMarkings({ scale }: Props) {
   const goalX = (W - MARKINGS.goalWidth) / 2
   const spotTop = MARKINGS.penaltySpotDistance
   const spotBottom = L - MARKINGS.penaltySpotDistance
+  // Meia-abertura (graus) da meia-lua: só a parte do arco que fica fora da grande área.
   const half = penaltyArcHalfAngleDeg()
   const stripeLength = L / STRIPES
 
@@ -68,7 +77,7 @@ export function PitchMarkings({ scale }: Props) {
       <ArcLine x={0} y={L} radius={MARKINGS.cornerArcRadius} from={270} to={360} {...line} />
     </Group>
   )
-}
+})
 
 type ArcLineProps = {
   x: number

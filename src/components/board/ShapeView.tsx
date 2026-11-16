@@ -1,5 +1,6 @@
+// Render Konva de um desenho (traço livre, flechas, retângulo, elipse, texto), em metros.
+import { memo } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
-import { Ellipse, Group, Line, Rect, Shape, Text } from 'react-konva'
 import { parseHex, textColorOn } from '@/lib/colors'
 import {
   FILL_OPACITY,
@@ -14,12 +15,14 @@ import {
   type ShapeStyle,
 } from '@/lib/geometry/shapes'
 import type { Point } from '@/lib/geometry/pitch'
+import { Ellipse, Group, Line, Rect, Shape, Text } from './konvaNodes'
 
 /** Área extra de clique (m) em volta de traços finos, para selecionar sem precisar de precisão. */
 const HIT_STROKE = 1.6
 /** Contorno (m de cada lado) das flechas, para destacar do gramado e das linhas. */
 const OUTLINE = 0.16
 
+/** Cor hex com transparência (`alpha` de 0 a 1), em rgba. */
 function withAlpha(hex: string, alpha: number): string {
   const rgb = parseHex(hex)
   return rgb ? `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})` : hex
@@ -30,12 +33,15 @@ function strokeProps(style: ShapeStyle, width = STROKE_WIDTH_M[style.width], str
   return {
     stroke,
     strokeWidth: width,
+    // Tracejado: traço de 3 larguras e vão de 2,2, proporcional à espessura.
     dash: style.dashed ? [dashBase * 3, dashBase * 2.2] : undefined,
     hitStrokeWidth: Math.max(HIT_STROKE, width),
+    // Dispensa o canvas auxiliar que o Konva usa em formas com contorno, preenchimento e opacidade: mais leve.
     perfectDrawEnabled: false,
   }
 }
 
+/** Pontos no formato que o Konva espera: [x1, y1, x2, y2, ...]. */
 const flat = (points: readonly Point[]) => points.flatMap((p) => [p.x, p.y])
 
 /** Escuro sob cores claras, claro sob cores escuras (ex.: flecha preta). */
@@ -56,6 +62,7 @@ function ArrowView({ shape }: { shape: ArrowShape | CurveShape }) {
   const control = shaft.control
   const body = (color: string, w: number, key: string) =>
     control ? (
+      // A curva é uma Bézier quadrática desenhada à mão no `sceneFunc` (o Konva não tem essa forma pronta).
       <Shape
         key={key}
         {...strokeProps(style, w, color, width)}
@@ -84,32 +91,36 @@ interface ShapeViewProps {
   shape: DrawShape
   /** Selecionar ativo: o desenho responde a clique e arrasto. */
   interactive: boolean
-  onSelect?: () => void
-  onMoved?: (dx: number, dy: number) => void
-  onEditText?: () => void
+  onSelect?: (shape: DrawShape) => void
+  onMoved?: (shape: DrawShape, dx: number, dy: number) => void
+  onEditText?: (shape: DrawShape) => void
 }
 
 /**
  * Um desenho, em metros, dentro de um Group na origem. Ao arrastar, o Group se desloca;
  * no fim o deslocamento vira `onMoved` e o Group volta para a origem (as coordenadas ficam na forma).
+ * Com `memo`, selecionar um desenho não redesenha os outros; por isso os handlers são funções de
+ * módulo que recebem o desenho, e não funções criadas a cada render.
  */
-export function ShapeView({ shape, interactive, onSelect, onMoved, onEditText }: ShapeViewProps) {
+export const ShapeView = memo(function ShapeView({ shape, interactive, onSelect, onMoved, onEditText }: ShapeViewProps) {
   const s = shape.style
   return (
     <Group
       listening={interactive}
       draggable={interactive}
       onMouseDown={(e: KonvaEventObject<MouseEvent>) => {
+        // Não deixa o clique chegar ao Stage, que soltaria a seleção.
         e.cancelBubble = true
-        onSelect?.()
+        onSelect?.(shape)
       }}
-      onDblClick={() => shape.type === 'text' && onEditText?.()}
+      onDblClick={() => shape.type === 'text' && onEditText?.(shape)}
       onDragEnd={(e) => {
         const node = e.target
         const dx = node.x()
         const dy = node.y()
+        // À mão: as props do Group não mudam (ele sempre está na origem), então o react-konva não o reposicionaria.
         node.position({ x: 0, y: 0 })
-        if (dx !== 0 || dy !== 0) onMoved?.(dx, dy)
+        if (dx !== 0 || dy !== 0) onMoved?.(shape, dx, dy)
       }}
     >
       {shape.type === 'free' ? (
@@ -153,4 +164,4 @@ export function ShapeView({ shape, interactive, onSelect, onMoved, onEditText }:
       ) : null}
     </Group>
   )
-}
+})

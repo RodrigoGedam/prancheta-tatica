@@ -16,6 +16,9 @@ const TABS: readonly { id: Mode; label: string }[] = [
   { id: 'signUp', label: 'Criar conta' },
 ]
 
+// O formulário tem sempre o campo `name` (vazio no login); o schema de login passa a aceitá-lo sem exigir nada.
+const signInFormSchema = signInSchema.extend({ name: z.string() })
+
 /** Entrar com e-mail e senha ou criar conta com nome, e-mail e senha. */
 export function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   return <Dialog open={open} onOpenChange={onOpenChange}>{open ? <AuthContent onDone={() => onOpenChange(false)} /> : null}</Dialog>
@@ -44,13 +47,16 @@ function AuthContent({ onDone }: { onDone: () => void }) {
         ))}
       </div>
 
+      {/* `key` pelo modo: trocar de aba monta um formulário novo, sem valores nem erros da outra. */}
       <CredentialsForm key={mode} mode={mode} onDone={onDone} />
     </DialogContent>
   )
 }
 
+/** Formulário de login ou cadastro. TanStack Form valida com o schema Zod; o envio é uma mutação do Query. */
 function CredentialsForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
-  const schema = mode === 'signIn' ? signInSchema.extend({ name: z.string() }) : signUpSchema
+  const schema = mode === 'signIn' ? signInFormSchema : signUpSchema
+  // A mutação guarda o erro do Supabase (já em português) para exibir em FormAlert.
   const submit = useMutation({
     mutationFn: (credentials: SignUpCredentials) => mode === 'signIn' ? signInWithPassword(credentials) : signUpWithPassword(credentials),
     onSuccess: onDone,
@@ -68,6 +74,7 @@ function CredentialsForm({ mode, onDone }: { mode: Mode; onDone: () => void }) {
       className="flex flex-col gap-3.5"
       onSubmit={(e) => {
         e.preventDefault()
+        // A falha já aparece por `submit.error`; o catch só evita uma promessa rejeitada solta.
         void form.handleSubmit().catch(() => undefined)
       }}
     >

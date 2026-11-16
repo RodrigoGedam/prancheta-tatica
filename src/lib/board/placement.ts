@@ -89,7 +89,7 @@ export interface StackInfo {
   isTop: boolean
 }
 
-/** Agrupa por ponto exato (empilhados) e marca o de maior `z` como topo. */
+/** Agrupa coordenadas arredondadas a 0,01 m e marca o de maior `z` como topo. */
 export function stackInfo(placements: readonly { id: string; x: number; y: number; z: number }[]): Map<string, StackInfo> {
   const groups = new Map<string, { id: string; z: number }[]>()
   for (const p of placements) {

@@ -1,3 +1,4 @@
+// Componente de interface escrito à mão sobre o AlertDialog do radix-ui (não gerado pelo CLI do shadcn).
 import type { ReactNode } from 'react'
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui'
 import { buttonClasses } from '@/components/ui/button'

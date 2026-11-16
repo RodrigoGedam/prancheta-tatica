@@ -1,3 +1,7 @@
+/**
+ * Estado da interface de desenho: ferramenta ativa, estilo (cor, espessura, tracejado), desenho
+ * selecionado e texto em edição. Não é salvo nem entra no desfazer; ao recarregar, volta ao padrão.
+ */
 import { create } from 'zustand'
 import { DRAW_COLORS, type ShapeStyle, type StrokeWidth } from '@/lib/geometry/shapes'
 
@@ -44,6 +48,7 @@ export const useToolStore = create<ToolState>()((set) => ({
   style: defaultStyle(),
   selectedId: null,
   editingTextId: null,
+  // Trocar de ferramenta desfaz a seleção: a moldura e o ponto de controle só existem com Selecionar.
   setTool: (tool) => set({ tool, selectedId: null }),
   setColor: (color) => set((s) => ({ style: { ...s.style, color } })),
   setWidth: (width) => set((s) => ({ style: { ...s.style, width } })),

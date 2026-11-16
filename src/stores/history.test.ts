@@ -157,7 +157,7 @@ describe('histórico', () => {
   it('ajuste automático não apaga o refazer', () => {
     s().addShape(arrow('a'))
     undo()
-    withoutHistory(() => s().prunePlacements('home', new Set()))
+    withoutHistory(() => s().setPlacements('home', []))
     expect(future()).toBe(1)
   })
 

@@ -1,3 +1,8 @@
+/**
+ * Sessão do usuário (Supabase Auth, e-mail e senha) e as ações de entrar, cadastrar, sair e excluir conta.
+ * Também decide de quem é a prancheta salva no navegador (`claimBoard`) e lida com a sessão que não
+ * pôde ser conferida por falta de rede (`sessionUnknown`). `initAuth` roda em `main.tsx` antes do render.
+ */
 import { isAuthRetryableFetchError, type User } from '@supabase/supabase-js'
 import { create } from 'zustand'
 import { authErrorMessage, signInSchema, signUpSchema, type Credentials, type SignUpCredentials } from '@/lib/auth/credentials'
@@ -16,6 +21,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(() => ({ user: null, sessionUnknown: false }))
 
+/** Chave do localStorage com o id do dono da prancheta salva (ausente = visitante). */
 const BOARD_OWNER_KEY = 'prancheta-tatica:prancheta:dono'
 
 function readBoardOwner(): string | null {
@@ -30,8 +36,9 @@ function readBoardOwner(): string | null {
 let boardOwner = readBoardOwner()
 
 /**
- * Quem usar este navegador depois não herda a prancheta nem o histórico de outra conta, mesmo que a
- * sessão tenha expirado com o app fechado. A prancheta de um visitante continua ao entrar na conta.
+ * Passa a prancheta para `userId` (null = visitante). Se ela tinha outro dono, prancheta, histórico e
+ * ferramentas são limpos: quem usar este navegador depois não herda o trabalho de outra conta, mesmo que
+ * a sessão tenha expirado com o app fechado. A prancheta de um visitante continua ao entrar na conta.
  */
 export function claimBoard(userId: string | null) {
   const changedOwner = Boolean(boardOwner && boardOwner !== userId)
@@ -53,6 +60,7 @@ export function claimBoard(userId: string | null) {
   }
 }
 
+/** Reage a uma mudança de sessão (login, logout, renovação): troca o dono e recarrega os dados. */
 function applySession(user: User | null) {
   const { user: previous, sessionUnknown } = useAuthStore.getState()
   useAuthStore.setState({ user })
@@ -62,6 +70,7 @@ function applySession(user: User | null) {
   // Fora do callback de onAuthStateChange: chamar o Supabase dentro dele pode travar.
   setTimeout(() => {
     claimBoard(user?.id ?? null)
+    // Descarta todo o cache do TanStack Query: times e formações visíveis dependem de quem está logado.
     void queryClient.resetQueries()
     // Só depois de descartar as listas lidas como visitante: com elas, useBoardSync tiraria os times privados.
     useAuthStore.setState({ sessionUnknown: false })
@@ -95,6 +104,7 @@ export async function initAuth(): Promise<void> {
   }
 }
 
+/** Entra com e-mail e senha; lança Error com a mensagem em português. A sessão chega por onAuthStateChange. */
 export async function signInWithPassword(credentials: Credentials): Promise<void> {
   const parsed = signInSchema.parse(credentials)
   const { error } = await getSupabase().auth.signInWithPassword(parsed)
@@ -109,6 +119,7 @@ export async function signUpWithPassword(credentials: SignUpCredentials): Promis
   if (!data.session) throw new Error('Não foi possível criar a conta. Se este e-mail já tem cadastro, use Entrar.')
 }
 
+/** Sai só neste navegador (`scope: 'local'`); outras sessões da conta continuam abertas. */
 export async function signOut(): Promise<void> {
   await getSupabase().auth.signOut({ scope: 'local' })
 }
@@ -119,6 +130,7 @@ export async function deleteAccount(): Promise<void> {
   await signOut()
 }
 
+/** Nome do cadastro (`user_metadata.full_name`), ou o e-mail se ele faltar. */
 export function displayName(user: User): string {
   const name: unknown = user.user_metadata.full_name
   return typeof name === 'string' && name.trim() ? name.trim() : (user.email ?? 'Minha conta')

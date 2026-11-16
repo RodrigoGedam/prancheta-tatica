@@ -6,6 +6,7 @@ export function isDefaultTeam(team: Owned): boolean {
   return team.user_id === null
 }
 
+/** Separa os times visíveis em privados e padrão; pressupõe que o RLS já filtrou os donos. */
 export function groupTeams<T extends Owned>(teams: readonly T[]): { mine: T[]; defaults: T[] } {
   const mine: T[] = []
   const defaults: T[] = []

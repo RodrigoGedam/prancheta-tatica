@@ -5,7 +5,7 @@ import { useStore } from 'zustand'
 import { useBoardStore } from '@/stores/boardStore'
 import { TOOLS, useToolStore, type Tool } from '@/stores/toolStore'
 import { clearDrawings } from './boardReset'
-import { redoBoard, undoBoard } from './useDrawShortcuts'
+import { applyStyleToSelection, redoBoard, toggleDashedStyle, undoBoard } from './useDrawShortcuts'
 
 /** Ícones do mockup (traço 2, viewBox 24). */
 const TOOL_ICON: Record<Tool, string> = {
@@ -19,6 +19,7 @@ const TOOL_ICON: Record<Tool, string> = {
   eraser: 'M8 20h12M4 15l9-9 6 6-7 7H8z',
 }
 
+/** Espessuras da toolbar; `px` é só a altura da amostra no botão (a espessura real está em metros). */
 const WIDTHS: readonly { id: StrokeWidth; label: string; px: number }[] = [
   { id: 'thin', label: 'Fina', px: 2 },
   { id: 'medium', label: 'Média', px: 4 },
@@ -28,18 +29,16 @@ const WIDTHS: readonly { id: StrokeWidth; label: string; px: number }[] = [
 const historyButton =
   'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border border-transparent bg-transparent p-0 text-ink-soft outline-none hover:bg-control hover:text-ink focus-visible:ring-2 focus-visible:ring-focus/70 disabled:cursor-default disabled:bg-transparent disabled:text-faint'
 
-/** Muda o estilo da ferramenta e, se houver um desenho selecionado, aplica nele também. */
-function applyStyle(patch: Partial<ReturnType<typeof useToolStore.getState>['style']>) {
-  const { selectedId } = useToolStore.getState()
-  const board = useBoardStore.getState()
-  const shape = selectedId ? board.shapes.find((s) => s.id === selectedId) : undefined
-  if (shape) board.updateShape({ ...shape, style: { ...shape.style, ...patch } })
-}
-
+/**
+ * Barra lateral de ferramentas: ferramenta ativa, apagar desenhos, tracejado, cor, espessura e desfazer/refazer.
+ * Mudar cor ou espessura vale para os próximos desenhos e também para o desenho selecionado.
+ */
 export function DrawToolbar() {
   const tool = useToolStore((s) => s.tool)
   const style = useToolStore((s) => s.style)
-  const { setTool, setColor, setWidth, toggleDashed } = useToolStore.getState()
+  // Ações do store nunca mudam: ler com getState() evita assinar o store só por elas.
+  const { setTool, setColor, setWidth } = useToolStore.getState()
+  // `temporal` é o store do zundo com as pilhas; assiná-lo liga e desliga os botões de desfazer/refazer.
   const canUndo = useStore(useBoardStore.temporal, (s) => s.pastStates.length > 0)
   const canRedo = useStore(useBoardStore.temporal, (s) => s.futureStates.length > 0)
   const hasShapes = useBoardStore((s) => s.shapes.length > 0)
@@ -95,10 +94,7 @@ export function DrawToolbar() {
         aria-pressed={style.dashed}
         aria-label="Tracejado (D)"
         title="Tracejado (D)"
-        onClick={() => {
-          toggleDashed()
-          applyStyle({ dashed: useToolStore.getState().style.dashed })
-        }}
+        onClick={toggleDashedStyle}
         className={cn(
           'flex size-11 cursor-pointer items-center justify-center rounded-[10px] border bg-control p-0 text-ink outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
           style.dashed ? 'border-accent text-accent' : 'border-line-strong',
@@ -122,7 +118,7 @@ export function DrawToolbar() {
               title={c.label}
               onClick={() => {
                 setColor(c.hex)
-                applyStyle({ color: c.hex })
+                applyStyleToSelection({ color: c.hex })
               }}
               className={cn(
                 'size-5 cursor-pointer rounded-full border-2 p-0 shadow-[inset_0_0_0_1px_var(--color-ground)] outline-none focus-visible:ring-2 focus-visible:ring-focus/70',
@@ -147,7 +143,7 @@ export function DrawToolbar() {
               title={`Espessura ${w.label.toLowerCase()}`}
               onClick={() => {
                 setWidth(w.id)
-                applyStyle({ width: w.id })
+                applyStyleToSelection({ width: w.id })
               }}
               className={cn(
                 'flex h-[22px] w-11 cursor-pointer items-center justify-center rounded-md border bg-control p-0 outline-none focus-visible:ring-2 focus-visible:ring-focus/70',

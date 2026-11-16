@@ -29,6 +29,7 @@ export function AuthMenu() {
   const user = useAuthStore((s) => s.user)
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  // Excluir a conta também encerra a sessão; a troca de dono limpa a prancheta (ver authStore).
   const remove = useMutation({ mutationFn: deleteAccount, onSuccess: () => setConfirming(false) })
 
   if (!user) return <SignInButton />

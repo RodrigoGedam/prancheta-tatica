@@ -1,3 +1,4 @@
+// Botão escrito à mão sobre o radix-ui (`asChild` usa o Slot para aplicar o estilo a outro elemento, como um Link).
 import type { ComponentProps } from 'react'
 import { Slot } from 'radix-ui'
 import { cn } from '@/lib/utils'

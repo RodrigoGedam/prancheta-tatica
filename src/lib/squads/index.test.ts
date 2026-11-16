@@ -43,6 +43,12 @@ it('isola seção com id exato', () => {
   expect(missing.issues.join()).toContain('Ausente')
   expect(parseWikipediaSquad('<h2 id="Elenco_atual_2">Outro</h2>', { sectionId: 'Elenco_atual' }).issues.join()).toContain('Elenco_atual')
 })
+it('usa a primeira seção correspondente e decodifica entidades no id', () => {
+  const html = `<h2 id='Elenco&#95;atual'>Elenco</h2>${row('1', 'G', 'Primeiro')}<h2 id="Elenco_atual">Duplicado</h2>${row('2', 'A', 'Segundo')}`
+  expect(parseWikipediaSquad(html, { sectionId: 'Elenco_atual' }).players).toEqual([
+    { name: 'Primeiro', number: 1, position: 'GOL' },
+  ])
+})
 it('valida trincas, ordena e limpa nomes', () => {
   const r = parseWikipediaSquad(row('', 'A', 'Sem número') + row('2', 'XX', 'Desconhecido') + row('2', 'M', 'João&nbsp;&amp; &#x27;José&#39;&#160;&#8211;<sup>[1]</sup><style>lixo</style> Silva') + row('2', 'Z', 'Repetido') + row('3', 'A', 'x'.repeat(81)) + row('', '', '') + row('N.º', 'Pos.', 'Nome') + row('', 'Técnico', 'Treinador') + row('100', 'A', 'Inválido') + '<tr><td>1</td><td>G</td></tr>')
   expect(r.players.map(p => p.name)).toEqual(["João & 'José' – Silva", 'Repetido', 'Sem número'])

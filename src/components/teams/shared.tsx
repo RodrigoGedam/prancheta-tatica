@@ -1,3 +1,4 @@
+// Peças comuns aos diálogos e painéis de times (e reaproveitadas no login e na prancheta).
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,7 @@ export function TeamDot({ color, size = 36 }: { color: string; size?: number }) 
   )
 }
 
+/** Primeira mensagem de erro de um campo do TanStack Form (texto ou objeto com `message`, como os do Zod). */
 export function FieldError({ errors }: { errors: readonly unknown[] }) {
   const message = errors
     .map((e) => (typeof e === 'string' ? e : e && typeof e === 'object' && 'message' in e ? String(e.message) : ''))
@@ -40,6 +42,7 @@ export function FieldError({ errors }: { errors: readonly unknown[] }) {
   return message ? <span className="text-[13px] text-danger">{message}</span> : null
 }
 
+/** Erro geral de um formulário (ex.: falha ao gravar), anunciado a leitores de tela por `role="alert"`. */
 export function FormAlert({ children }: { children: ReactNode }) {
   return (
     <p role="alert" className="m-0 rounded-lg border border-[#57291b] bg-[#2b1510] px-3.5 py-2.5 text-sm text-danger">
@@ -82,6 +85,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
   )
 }
 
+/** Data ISO no formato brasileiro (dd/mm/aaaa); vazio se a data for inválida. */
 export function formatDate(iso: string): string {
   const d = new Date(iso)
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('pt-BR')

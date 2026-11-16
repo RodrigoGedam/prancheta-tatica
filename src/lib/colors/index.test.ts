@@ -21,10 +21,19 @@ describe('cores', () => {
     expect(() => relativeLuminance('blue')).toThrow('Cor inválida: blue')
     expect(() => contrastRatio('#fff', 'blue')).toThrow('Cor inválida: blue')
     expect(() => deltaE76('blue', '#fff')).toThrow('Cor inválida: blue')
+    expect(() => textColorOn('blue')).toThrow('Cor inválida: blue')
+    expect(() => contrastColor('blue')).toThrow('Cor inválida: blue')
   })
   it('escolhe o texto de maior contraste', () => {
     for (const color of ['#FFFFFF', '#FACC15', '#F3F4F6']) expect(textColorOn(color)).toBe(DARK_TEXT)
     for (const color of ['#000000', '#2563EB', '#1F2937', '#B91C1C']) expect(textColorOn(color)).toBe(LIGHT_TEXT)
+  })
+  it('preserva a escolha de contraste em toda a escala de cinza', () => {
+    for (let channel = 0; channel <= 255; channel++) {
+      const background = `#${channel.toString(16).padStart(2, '0').repeat(3)}`
+      const expected = contrastRatio(background, LIGHT_TEXT) >= contrastRatio(background, DARK_TEXT) ? LIGHT_TEXT : DARK_TEXT
+      expect(textColorOn(background)).toBe(expected)
+    }
   })
   it('calcula distância CIELAB', () => {
     expect(deltaE76('#2563EB', '#2563EB')).toBe(0)

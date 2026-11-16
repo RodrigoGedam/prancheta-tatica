@@ -8,6 +8,8 @@ import { POSITIONS } from '@/lib/positions'
 import { playerInputSchema, type PlayerRow } from '@/lib/supabase/schemas'
 import { FieldError, FormAlert, inputClass, labelClass } from './shared'
 
+// Schema dos campos como o formulário os tem (número é texto). Antes de gravar, o valor passa ainda por
+// `playerInputSchema`, que é o formato do banco.
 const playerFormSchema = z.object({
   name: z.string().trim().min(1, 'Informe o nome do jogador.').max(80, 'Use no máximo 80 caracteres.'),
   number: z
@@ -31,6 +33,7 @@ interface PlayerFormDialogProps {
   onSaved: () => void
 }
 
+/** Cria ou edita um jogador. O formulário é montado a cada abertura (e por jogador, via `key`), sempre limpo. */
 export function PlayerFormDialog({ open, onOpenChange, ...props }: PlayerFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,6 +44,7 @@ export function PlayerFormDialog({ open, onOpenChange, ...props }: PlayerFormDia
 
 function PlayerForm({ teamId, roster, player, nextSortOrder, onSaved }: Omit<PlayerFormDialogProps, 'open' | 'onOpenChange'>) {
   const save = useSavePlayer(teamId)
+  // Um jogador importado com posição desconhecida a mantém como opção, para editar sem perdê-la.
   const positions: readonly string[] =
     player && !(POSITIONS as readonly string[]).includes(player.position) ? [player.position, ...POSITIONS] : POSITIONS
 
@@ -55,6 +59,7 @@ function PlayerForm({ teamId, roster, player, nextSortOrder, onSaved }: Omit<Pla
     validators: { onChange: playerFormSchema, onSubmit: playerFormSchema },
     onSubmit: async ({ value }) => {
       const v = playerFormSchema.parse(value)
+      // Limite de titulares (11, um goleiro): o botão já fica desabilitado, mas o envio confere de novo.
       if (starterProblem(roster, { id: player?.id ?? null, position: v.position, is_starter: v.is_starter })) return
       const input = playerInputSchema.parse({
         name: v.name,
@@ -140,6 +145,7 @@ function PlayerForm({ teamId, roster, player, nextSortOrder, onSaved }: Omit<Pla
             </div>
           )}
         </form.Field>
+        {/* Erros de número e nome numa linha só, abaixo dos dois campos lado a lado. */}
         <form.Subscribe selector={(s) => [s.fieldMeta.number?.errors ?? [], s.fieldMeta.name?.isTouched ? s.fieldMeta.name.errors : []] as const}>
           {([numberErrors, nameErrors]) =>
             numberErrors.length > 0 || nameErrors.length > 0 ? (

@@ -5,15 +5,22 @@ import { createFormation, deleteFormation, fetchFormations, renameFormation } fr
 import type { FormationSlot } from '@/lib/supabase/schemas'
 import { DEFAULT_FORMATION } from '@/stores/boardStore'
 
+/** Chave do cache das formações customizadas (as fixas ficam no código, fora do Supabase). */
 const formationKeys = { all: ['formations'] as const }
 
+/** Formações customizadas do usuário. Para visitantes a RLS não devolve nenhuma linha. */
 export function useCustomFormations() {
   return useQuery({ queryKey: formationKeys.all, queryFn: fetchFormations })
 }
 
-/** Fixas + customizadas, e um resolvedor que cai na formação padrão se o id sumiu (ex.: custom excluída). */
+/**
+ * Fixas + customizadas, e um resolvedor que cai na formação padrão se o id sumiu (ex.: custom excluída).
+ * `isLoaded`: a lista chegou com sucesso. `isSettled`: a busca terminou, com sucesso ou erro.
+ */
 export function useFormationCatalog() {
   const custom = useCustomFormations()
+  // useMemo mantém o mesmo objeto entre renders enquanto os dados não mudam: quem depende do catálogo
+  // (useSideModel, useBoardSync) não recalcula à toa.
   return useMemo(() => {
     const customDefs: FormationDef[] = (custom.data ?? []).map((f) => ({ id: f.id, name: f.name, slots: f.slots }))
     const resolve = (id: string): FormationDef =>

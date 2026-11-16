@@ -14,6 +14,7 @@ import { groupTeams } from '@/lib/teams/ownership'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
+/** `/times?time=<id>`: o time aberto fica na URL. Um valor inválido vira "nenhum" em vez de quebrar a rota. */
 const searchSchema = z.object({ time: z.string().optional().catch(undefined) })
 
 export const Route = createFileRoute('/times')({
@@ -21,8 +22,10 @@ export const Route = createFileRoute('/times')({
   component: TimesPage,
 })
 
+/** Diálogo de importação: null = fechado; com `initialTeam`, é a reimportação de um time existente. */
 type ImportState = { initialTeam?: { name: string; color: string } } | null
 
+/** Lista de times de um grupo (meus ou padrão); cada item é um link que troca o `?time=` da URL. */
 function TeamGroup({
   title,
   teams,
@@ -67,6 +70,7 @@ function TeamGroup({
   )
 }
 
+/** Rota `/times`: lista de times à esquerda e o time selecionado (elenco e ações) à direita. */
 function TimesPage() {
   const { time } = Route.useSearch()
   const navigate = Route.useNavigate()
@@ -78,7 +82,9 @@ function TimesPage() {
 
   const list = teams.data ?? []
   const { mine, defaults } = groupTeams(list)
+  // Sem `?time=` (ou com um id que não existe mais), abre o primeiro time da lista.
   const selected = list.find((t) => t.id === time) ?? mine[0] ?? defaults[0]
+  // `replace`: trocar de time não empilha entradas no histórico do navegador.
   const select = (id: string | undefined) => void navigate({ search: { time: id }, replace: true })
 
   return (
@@ -125,6 +131,7 @@ function TimesPage() {
       </section>
 
       {selected ? (
+        // `key` pelo id: trocar de time monta um painel novo, sem estado (edição, diálogos) do anterior.
         <TeamPanel
           key={selected.id}
           team={selected}

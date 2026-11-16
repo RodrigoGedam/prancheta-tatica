@@ -12,9 +12,11 @@ import { csvPath, readClubs, readManifest, writeManifest, type Club } from './sq
 
 const API = 'https://pt.wikipedia.org/w/api.php'
 const HEADERS = { 'User-Agent': 'prancheta-tatica-squads/0.1 (projeto pessoal)', 'Api-User-Agent': 'prancheta-tatica-squads/0.1' }
+// Intervalos em milissegundos: espaçam chamadas normais e dão mais tempo após recusas.
 const DELAY_MS = 5_000
 const RETRY_DELAY_MS = 30_000
 const MAX_ATTEMPTS = 4
+// Limiares de revisão: idade em dias e quantidades mínimas geram alertas, sem rejeitar o elenco.
 const STALE_AFTER_DAYS = 60
 const MIN_PLAYERS = 18
 const MIN_GOALKEEPERS = 2
@@ -45,6 +47,7 @@ function safeJson(text: string): unknown {
 }
 
 function daysSince(isoDate: string, now: Date): number {
+  // Datas da fonte são dias em UTC; 86.400.000 é a quantidade de milissegundos em um dia.
   return Math.floor((now.getTime() - new Date(`${isoDate}T00:00:00Z`).getTime()) / 86_400_000)
 }
 
@@ -89,6 +92,7 @@ async function main(): Promise<void> {
     if (fetchedAny) await wait(DELAY_MS)
     fetchedAny = true
     const result = await fetchClub({ ...club, wiki: club.wiki }, now)
+    // Uma extração vazia não deve sobrescrever um CSV existente nem seu registro de revisão.
     if (result.players.length > 0) {
       writeFileSync(csvPath(club.slug), toPlayersCsv(result.players))
       manifest[club.slug] = { sourceDate: result.sourceDate, fetchedAt: now.toISOString().slice(0, 10), reviewed: false }

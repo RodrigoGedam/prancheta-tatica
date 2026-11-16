@@ -1,3 +1,5 @@
+// As três opções do botão de resetar a prancheta. Cada uma vale no máximo um passo de desfazer
+// (nenhum, se não havia o que mudar) e também limpa a seleção de desenho.
 import type { TeamSummary } from '@/lib/supabase/queries'
 import { useBoardStore } from '@/stores/boardStore'
 import { useToolStore } from '@/stores/toolStore'

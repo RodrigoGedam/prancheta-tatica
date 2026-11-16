@@ -14,6 +14,7 @@ export const ALTERNATIVES: readonly string[] = [
   '#0F766E',
 ]
 
+/** Compara cores hex sem diferenciar maiúsculas. */
 const same = (a: string, b: string | undefined) => a.toUpperCase() === b?.toUpperCase()
 
 /** Aplica a cor só na prancheta; escolher a cor original limpa a alternativa. Nunca grava no Supabase. */
@@ -28,6 +29,7 @@ interface ColorOptionsProps {
   suggestion?: string | null
 }
 
+/** Grade de cores escolhíveis (um grupo de botões de rádio); `suggestion` ganha um anel de destaque. */
 export function ColorOptions({ colors, value, onChoose, suggestion }: ColorOptionsProps) {
   return (
     <div role="radiogroup" aria-label="Cor na prancheta" className="flex flex-wrap gap-2">

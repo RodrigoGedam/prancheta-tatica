@@ -16,6 +16,7 @@ export function decodeCsvBytes(bytes: Uint8Array): DecodedCsv {
     return { text: new TextDecoder('utf-8').decode(bytes.subarray(3)), encoding: 'utf-8' }
   }
   try {
+    // UTF-8 estrito evita trocar bytes inválidos por � antes de tentar a codificação comum do Excel.
     return { text: new TextDecoder('utf-8', { fatal: true }).decode(bytes), encoding: 'utf-8' }
   } catch {
     return { text: new TextDecoder('windows-1252').decode(bytes), encoding: 'windows-1252' }
@@ -68,7 +69,10 @@ export interface ParsedPlayersCsv {
 const MAX_NAME = 80
 const MAX_NICKNAME = 40
 const MAX_POSITION = 10
+const fieldsSchema = z.array(z.string().trim())
+const numberSchema = z.number().int().min(0).max(99)
 
+/** Valida o CSV separado por ponto e vírgula; erros de arquivo descartam tudo, erros de linha anulam só o jogador. */
 export function parsePlayersCsv(text: string): ParsedPlayersCsv {
   const source = text.replace(/^\uFEFF/, '')
   const rows: CsvRow[] = []
@@ -96,7 +100,7 @@ export function parsePlayersCsv(text: string): ParsedPlayersCsv {
         parser.abort()
         return
       }
-      const fields = z.array(z.string().trim()).parse(result.data)
+      const fields = fieldsSchema.parse(result.data)
       if (fields.every(field => field === '')) return
       if (!headers) {
         headers = fields.map(field => normalize(field).toLowerCase())
@@ -128,7 +132,7 @@ export function parsePlayersCsv(text: string): ParsedPlayersCsv {
       let number: number | null = null
       if (raw.numero) {
         const parsed = /^\d+$/.test(raw.numero)
-          ? z.number().int().min(0).max(99).safeParse(Number(raw.numero))
+          ? numberSchema.safeParse(Number(raw.numero))
           : null
         if (parsed?.success) number = parsed.data
         else issue('warning', `Número "${raw.numero}" inválido, ignorado`)
@@ -170,5 +174,6 @@ export function parsePlayersCsv(text: string): ParsedPlayersCsv {
 }
 
 function normalize(value: string): string {
+  // NFD separa os acentos das letras; remover as marcas permite aceitar "não", "NAO" e variações.
   return value.trim().normalize('NFD').replace(/\p{M}/gu, '').toUpperCase()
 }

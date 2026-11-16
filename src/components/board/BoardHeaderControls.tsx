@@ -12,6 +12,7 @@ import { SIDE_LABEL, useSideActions, useSideModel, type SideModel } from './useB
 
 const selectClass =
   'h-9 rounded-lg border border-line-strong bg-control px-2.5 text-sm text-ink outline-none focus:border-focus disabled:opacity-50'
+/** Valor da opção "Gerenciar formações…": abre o diálogo em vez de escolher uma formação. */
 const MANAGE = '__manage__'
 
 /** Seletores de time e formação (centro do cabeçalho, só na prancheta). */
@@ -32,6 +33,7 @@ export function BoardHeaderControls() {
   )
 }
 
+/** Cor, time e formação de um lado. Escolher um time aplica a formação padrão dele. */
 function SideControls({
   model,
   otherTeamId,
@@ -110,6 +112,7 @@ function SideControls({
   )
 }
 
+/** Opção de time; o time já escolhido no outro lado fica desabilitado (o mesmo time não joga contra si). */
 function TeamOption({ team, otherTeamId }: { team: TeamSummary; otherTeamId: string | null }) {
   const taken = team.id === otherTeamId
   return (

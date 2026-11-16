@@ -1,3 +1,7 @@
+/**
+ * Ponto único de criação do cliente de rede e autenticação do app.
+ * A chave publishable identifica o projeto; as permissões de dados são aplicadas pelo RLS no banco.
+ */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 

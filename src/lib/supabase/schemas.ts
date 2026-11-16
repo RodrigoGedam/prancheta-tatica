@@ -1,5 +1,10 @@
+/**
+ * Contratos Zod para entradas dos formulários e respostas do banco.
+ * Validam dados externos antes que entrem no estado tipado do app.
+ */
 import { z } from 'zod'
 
+/** Cor persistida em #RRGGBB; o banco exige seis dígitos, sem abreviação nem transparência. */
 export const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/
 const teamName = z.string().trim().min(1, 'Informe o nome do time.').max(40, 'Use no máximo 40 caracteres.')
 const playerName = z.string().trim().min(1, 'Informe o nome do jogador.').max(80, 'Use no máximo 80 caracteres.')
@@ -15,6 +20,7 @@ export const playerRowSchema = z.object({
   position: z.string().min(1).max(10), nickname: z.string().max(40).nullable(),
   is_starter: z.boolean(), sort_order: z.number().int(), created_at: z.string(),
 })
+/** Vaga em metros para o time de baixo; o índice 0..10 identifica o slot na formação. */
 export const formationSlotSchema = z.object({
   slot: z.number().int().min(0).max(10), position: z.string().min(1).max(10),
   x: z.number(), y: z.number(),

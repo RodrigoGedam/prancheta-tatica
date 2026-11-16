@@ -9,6 +9,7 @@ Prancheta Tática é um app web para montar táticas de futebol de campo (11 con
 
 - **Estado atual, decisões e próxima etapa: [`docs/memoria.md`](docs/memoria.md). Leia primeiro ao iniciar uma sessão e atualize ao final.**
 - Especificação completa: [`docs/especificacao.md`](docs/especificacao.md). É a fonte da verdade sobre o comportamento.
+- Arquitetura, motivo da stack e regras do código (para desenvolvedores): [`docs/arquitetura.md`](docs/arquitetura.md). Mantenha atualizado (regra 7).
 - Plano de implementação e divisão de tarefas entre agentes: [`docs/plano-implementacao.md`](docs/plano-implementacao.md).
 - Fora do escopo (não implementar): confirmação de e-mail, recuperação de senha, compartilhamento, bola/cones, export PNG, várias pranchetas, mobile.
 
@@ -46,7 +47,8 @@ src/
   routes/              # TanStack Router: / (prancheta), /times
   components/board/    # Konva: campo, tokens, banco, ferramentas de desenho
   components/teams/    # CRUD de times, tabela de jogadores, diálogo de importação
-  components/ui/       # shadcn/ui (gerado)
+  components/ui/       # button, dialog, alert-dialog: escritos à mão sobre radix-ui
+  hooks/               # TanStack Query (times, jogadores, formações) e tamanho do contêiner
   stores/              # Zustand + zundo
   lib/csv/             # parser/validador de CSV (puro, sem React)
   lib/formations/      # formações fixas, espelhamento, validação de custom (puro)
@@ -57,13 +59,17 @@ src/
   lib/auth/            # validação de credenciais e mensagens de erro do login (puro)
   lib/players/          # ordenação do elenco (puro)
   lib/squads/           # elenco da Wikipédia: parser, titulares e CSV (puro)
+  lib/board/            # formação inicial, encaixe e pilhas dos jogadores (puro)
+  lib/teams/            # dono do time: padrão ou do usuário (puro)
+  lib/positions.ts      # lista de posições válidas
 supabase/migrations/   # SQL
+supabase/tests/        # testes de acesso (RLS), rodados à mão num Postgres
 data/serie-a-2026/     # times padrão: CSVs revisados, clubs.json, manifest.json
 scripts/               # coleta (squads:fetch) e carga (squads:seed) dos times padrão
 docs/
 ```
 
-Tudo em `src/lib/**` é **lógica pura**: sem React, sem Konva, sem acesso a rede ou DOM. Cada módulo tem testes Vitest ao lado (`*.test.ts`).
+Tudo em `src/lib/**` é **lógica pura**: sem React, sem Konva, sem acesso a rede ou DOM. A exceção é `src/lib/supabase/` (`client.ts` e `queries.ts`), o único ponto de acesso à rede. Cada módulo tem testes Vitest ao lado (`*.test.ts`).
 
 ## Regras para agentes
 
@@ -73,7 +79,10 @@ Tudo em `src/lib/**` é **lógica pura**: sem React, sem Konva, sem acesso a red
 4. **Testes obrigatórios** para lógica em `src/lib/**`. Antes de terminar, rode `pnpm test` e `pnpm typecheck` e informe o resultado real (inclusive falhas).
 5. **TypeScript strict**, sem `any` (use `unknown` + Zod nas fronteiras). Exports nomeados; funções puras e pequenas.
 6. **Idioma:** textos da interface, mensagens de erro para o usuário e docs em português do Brasil. Identificadores de código em inglês.
-7. **Relatório final** de cada tarefa: arquivos alterados, decisões tomadas, o que ficou de fora e resultado dos testes.
+7. **Comentários e documentação acompanham o código.** A cada implementação nova ou mudança de comportamento, avalie duas coisas antes de terminar:
+   - **Comentário:** o trecho precisa de um? Comente o que é importante e não é óbvio (o porquê de uma regra, uma armadilha, uma unidade, o papel de um módulo), de forma concisa, em português, num nível que um iniciante entenda. Não comente o óbvio nem repita o que o nome já diz. Se a mudança deixar um comentário existente errado, corrija-o.
+   - **Documentação:** a mudança altera a arquitetura, uma regra, uma decisão de stack, o modelo de dados, o formato salvo ou um fluxo descrito em [`docs/arquitetura.md`](docs/arquitetura.md)? Se sim, atualize o documento na mesma tarefa. Se não, diga no relatório final que avaliou e não era preciso.
+8. **Relatório final** de cada tarefa: arquivos alterados, decisões tomadas, o que ficou de fora, se comentários e `docs/arquitetura.md` foram atualizados (ou por que não era preciso) e resultado dos testes.
 
 ## Convenções de domínio
 

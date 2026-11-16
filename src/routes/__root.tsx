@@ -8,7 +8,9 @@ const navLink =
   'rounded-lg px-3 py-2 text-sm font-medium text-muted no-underline transition-colors hover:text-ink'
 const navLinkActive = 'bg-control font-semibold text-ink'
 
+/** Layout de todas as páginas: cabeçalho (logo, seletores da prancheta, navegação, conta) e a rota atual. */
 function RootLayout() {
+  // Os seletores de time e formação só aparecem no cabeçalho da prancheta.
   const onBoard = useRouterState({ select: (s) => s.location.pathname === '/' })
   return (
     <div className="flex h-full min-h-0 flex-col">

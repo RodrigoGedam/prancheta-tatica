@@ -5,15 +5,21 @@ import { DEFAULT_PLAYER_SORT, sortPlayers, togglePlayerSort, type PlayerSort, ty
 import type { PlayerRow } from '@/lib/supabase/schemas'
 import { cn } from '@/lib/utils'
 
+// Tabela do elenco com TanStack Table, usado só para colunas e células: nenhuma feature ligada.
+// A ordenação é feita antes, por `sortPlayers`, porque "titulares primeiro" é regra de domínio.
 const features = tableFeatures({})
 
 const SORTABLE_COLUMNS: readonly string[] = ['number', 'name', 'position'] satisfies PlayerSortColumn[]
 
+/** Guarda de tipo: depois deste teste, o TypeScript trata `columnId` como coluna ordenável. */
 function isSortable(columnId: string): columnId is PlayerSortColumn {
   return SORTABLE_COLUMNS.includes(columnId)
 }
 
 const helper = createColumnHelper<typeof features, PlayerRow>()
+
+/** Linhas identificadas pelo id do jogador (e não pelo índice), estáveis ao reordenar. */
+const getRowId = (row: PlayerRow) => row.id
 
 interface PlayersTableProps {
   players: PlayerRow[]
@@ -25,11 +31,8 @@ interface PlayersTableProps {
   }
 }
 
-export function PlayersTable({ players, numberColor, actions }: PlayersTableProps) {
-  const [sort, setSort] = useState<PlayerSort>(DEFAULT_PLAYER_SORT)
-  const sortedPlayers = useMemo(() => sortPlayers(players, sort), [players, sort])
-
-  const columns = helper.columns([
+function buildColumns(numberColor: string, actions: PlayersTableProps['actions']) {
+  return helper.columns([
     helper.accessor('number', {
       header: 'Nº',
       cell: (info) => (
@@ -73,12 +76,19 @@ export function PlayersTable({ players, numberColor, actions }: PlayersTableProp
         ) : null,
     }),
   ])
+}
+
+/** Elenco em tabela; clicar no cabeçalho de Nº, Nome ou Posição alterna a ordenação. */
+export function PlayersTable({ players, numberColor, actions }: PlayersTableProps) {
+  const [sort, setSort] = useState<PlayerSort>(DEFAULT_PLAYER_SORT)
+  const sortedPlayers = useMemo(() => sortPlayers(players, sort), [players, sort])
+  const columns = useMemo(() => buildColumns(numberColor, actions), [numberColor, actions])
 
   const table = useTable({
     features,
     columns,
     data: sortedPlayers,
-    getRowId: (row) => row.id,
+    getRowId,
   })
 
   return (

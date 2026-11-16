@@ -1,9 +1,10 @@
 import type { KonvaEventObject } from 'konva/lib/Node'
-import { Circle, Group, Rect, Text } from 'react-konva'
 import { textColorOn } from '@/lib/colors'
+import { Circle, Group, Rect, Text } from './konvaNodes'
 
 /** Medidas do token em metros (o Group pai converte para pixels). */
-export const TOKEN_RADIUS = 2.2
+const TOKEN_RADIUS = 2.2
+/** Fonte, altura e largura máxima do rótulo com o nome, abaixo do círculo. */
 const LABEL_FONT = 1.45
 const LABEL_HEIGHT = 2.1
 const LABEL_WIDTH = 12
@@ -23,6 +24,10 @@ interface PlayerTokenProps {
   onHover: (hovering: boolean) => void
 }
 
+/**
+ * Jogador no campo: círculo com número (ou sigla), rótulo com o nome e, no topo de uma pilha, o emblema +N.
+ * O próprio Group é arrastável pelo Konva; quem decide o destino é o `onDragEnd` do Board.
+ */
 export function PlayerToken({
   x,
   y,
@@ -38,6 +43,7 @@ export function PlayerToken({
   onHover,
 }: PlayerTokenProps) {
   const ink = textColorOn(fill)
+  // Fonte (m) da marca: menor quando ela tem mais de dois caracteres, para caber no círculo.
   const markFont = mark.length > 2 ? 1.55 : 2.05
   // Largura aproximada do texto (Barlow ~0,55 em por caractere) + respiro; limitada a LABEL_WIDTH.
   const pillWidth = Math.min(LABEL_WIDTH, label.length * LABEL_FONT * 0.55 + 1.2)
@@ -47,6 +53,7 @@ export function PlayerToken({
       y={y}
       draggable={draggable}
       onDragStart={(e) => {
+        // Só visual, durante o arrasto: a ordem salva vem do `z` que o store dá ao soltar.
         e.target.moveToTop()
         onDragStart()
       }}

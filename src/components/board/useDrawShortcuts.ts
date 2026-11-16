@@ -1,8 +1,27 @@
+// Atalhos de teclado da prancheta e as ações de estilo e desfazer que a toolbar também usa.
 import { useEffect } from 'react'
+import type { ShapeStyle } from '@/lib/geometry/shapes'
 import { redo, undo, useBoardStore } from '@/stores/boardStore'
 import { TOOLS, useToolStore } from '@/stores/toolStore'
 
-/** Desfaz/refaz e ajusta a seleção (some se o desenho deixou de existir; senão a toolbar mostra o estilo dele). */
+/** Se houver um desenho selecionado, aplica o estilo nele também. */
+export function applyStyleToSelection(patch: Partial<ShapeStyle>) {
+  const { selectedId } = useToolStore.getState()
+  const board = useBoardStore.getState()
+  const shape = selectedId ? board.shapes.find((s) => s.id === selectedId) : undefined
+  if (shape) board.updateShape({ ...shape, style: { ...shape.style, ...patch } })
+}
+
+/** Liga/desliga o tracejado do estilo atual e do desenho selecionado. */
+export function toggleDashedStyle() {
+  useToolStore.getState().toggleDashed()
+  applyStyleToSelection({ dashed: useToolStore.getState().style.dashed })
+}
+
+/**
+ * Desfaz/refaz e ajusta a seleção (some se o desenho deixou de existir; senão a toolbar mostra o estilo dele).
+ * São os pontos de entrada da interface: chamar `undo()` direto pula esse ajuste.
+ */
 export function undoBoard() {
   undo()
   dropMissingSelection()
@@ -36,6 +55,7 @@ function shouldIgnore(e: KeyboardEvent): boolean {
  * Delete/Backspace (apagar o desenho selecionado), Ctrl+Z (desfazer), Ctrl+Y ou Ctrl+Shift+Z (refazer).
  */
 export function useDrawShortcuts() {
+  // Registrado uma vez; o handler lê os stores com getState(), então sempre vê o estado atual.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.altKey || shouldIgnore(e)) return
@@ -61,11 +81,7 @@ export function useDrawShortcuts() {
       }
       if (key === 'D') {
         e.preventDefault()
-        tools.toggleDashed()
-        const dashed = useToolStore.getState().style.dashed
-        const board = useBoardStore.getState()
-        const shape = board.shapes.find((s) => s.id === tools.selectedId)
-        if (shape) board.updateShape({ ...shape, style: { ...shape.style, dashed } })
+        toggleDashedStyle()
         return
       }
       if (e.key === 'Escape') {

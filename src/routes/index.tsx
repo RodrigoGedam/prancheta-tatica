@@ -9,9 +9,11 @@ import { useDrawShortcuts } from '@/components/board/useDrawShortcuts'
 
 export const Route = createFileRoute('/')({ component: BoardPage })
 
+/** Rota `/`: a prancheta (toolbar, campo e bancos). É aqui que useBoardSync reconcilia o store com o Supabase. */
 function BoardPage() {
   const away = useSideModel('away')
   const home = useSideModel('home')
+  // Visitante primeiro (joga em cima). useMemo mantém a mesma lista enquanto os modelos não mudam.
   const sides = useMemo(() => [away, home], [away, home])
   useBoardSync(sides)
   useDrawShortcuts()

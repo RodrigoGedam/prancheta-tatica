@@ -23,10 +23,15 @@ interface TeamPanelProps {
   onCopied: (copyId: string) => void
 }
 
+/** Texto para busca sem acentos nem caixa: "João" e "joao" casam. */
 function normalizeSearch(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim()
 }
 
+/**
+ * Painel de um time em /times: resumo, busca e filtro, tabela do elenco e as ações.
+ * Times padrão são só leitura; quem está logado pode copiá-los para "Meus times".
+ */
 export function TeamPanel({ team, onEditTeam, onReimport, onDeleted, onCopied }: TeamPanelProps) {
   const players = usePlayers(team.id)
   const deleteTeam = useDeleteTeam()
@@ -38,12 +43,14 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted, onCopied }:
 
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState('')
+  // null = diálogo fechado; `{ player: null }` = novo jogador; `{ player }` = edição.
   const [editing, setEditing] = useState<{ player: PlayerRow | null } | null>(null)
   const [deletingPlayer, setDeletingPlayer] = useState<PlayerRow | null>(null)
   const [confirmTeamDelete, setConfirmTeamDelete] = useState(false)
 
   const all = useMemo(() => players.data ?? [], [players.data])
   const starters = all.filter((p) => p.is_starter).length
+  // Posições válidas e, no fim, as desconhecidas que aparecem no elenco (o CSV as aceita com aviso).
   const positionOptions = useMemo(() => {
     const extra = [...new Set(all.map((p) => p.position))].filter((p) => !(POSITIONS as readonly string[]).includes(p))
     return [...POSITIONS, ...extra.sort()]
@@ -61,7 +68,24 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted, onCopied }:
     )
   }, [all, search, position])
 
+  // Um jogador novo entra depois do último na ordem de cadastro.
   const nextSortOrder = all.reduce((max, p) => Math.max(max, p.sort_order), -1) + 1
+
+  // Ações memoizadas: um objeto novo a cada render faria PlayersTable recriar as colunas.
+  const resetDeletePlayer = deletePlayer.reset
+  const tableActions = useMemo(
+    () =>
+      readOnly
+        ? undefined
+        : {
+            onEdit: (player: PlayerRow) => setEditing({ player }),
+            onDelete: (player: PlayerRow) => {
+              resetDeletePlayer()
+              setDeletingPlayer(player)
+            },
+          },
+    [readOnly, resetDeletePlayer],
+  )
 
   return (
     <section
@@ -175,17 +199,7 @@ export function TeamPanel({ team, onEditTeam, onReimport, onDeleted, onCopied }:
           key={team.id}
           players={visible}
           numberColor={lighten(team.color)}
-          actions={
-            readOnly
-              ? undefined
-              : {
-                  onEdit: (player) => setEditing({ player }),
-                  onDelete: (player) => {
-                    deletePlayer.reset()
-                    setDeletingPlayer(player)
-                  },
-                }
-          }
+          actions={tableActions}
         />
       )}
 

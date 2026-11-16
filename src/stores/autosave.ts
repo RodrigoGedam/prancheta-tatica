@@ -1,3 +1,7 @@
+/**
+ * Salvamento automático da prancheta no localStorage. Observa o boardStore e grava o snapshot
+ * (formato definido em `lib/persistence`) pouco depois de cada mudança. Iniciado em `main.tsx`.
+ */
 import { BOARD_STORAGE_KEY, serialize } from '@/lib/persistence'
 import { snapshotOf, useBoardStore } from './boardStore'
 
@@ -14,8 +18,9 @@ function browserStorage(): Storage | null {
 export const AUTOSAVE_DELAY = 400
 
 /**
- * Grava a prancheta no localStorage com debounce, e na hora ao sair da página.
- * Chamar uma vez, no início do app. Devolve a função que para o autosave (gravando o pendente).
+ * Grava a prancheta no localStorage com debounce (espera a sequência de mudanças parar por `delay` ms
+ * e grava uma vez só), e na hora ao sair da página. Chamar uma vez, no início do app.
+ * Devolve a função que para o autosave (gravando o pendente). `storage` é injetável para os testes.
  */
 export function startAutosave(storage: Storage | null = browserStorage(), delay = AUTOSAVE_DELAY): () => void {
   // Storage bloqueado (cookies desligados, iframe isolado): a prancheta funciona, só não salva.
@@ -32,6 +37,7 @@ export function startAutosave(storage: Storage | null = browserStorage(), delay 
   }
 
   const unsubscribe = useBoardStore.subscribe((s, prev) => {
+    // Só os campos salvos contam; como as ações criam objetos novos ao mudar, comparar referências basta.
     if (s.sides === prev.sides && s.hidden === prev.hidden && s.nextZ === prev.nextZ && s.shapes === prev.shapes) return
     clearTimeout(timer)
     timer = setTimeout(save, delay)
@@ -42,6 +48,7 @@ export function startAutosave(storage: Storage | null = browserStorage(), delay 
     clearTimeout(timer)
     save()
   }
+  // `pagehide` dispara ao fechar a aba ou sair da página: grava o pendente para não perder os últimos ms.
   const win = typeof window === 'undefined' ? undefined : window
   win?.addEventListener('pagehide', flush)
 

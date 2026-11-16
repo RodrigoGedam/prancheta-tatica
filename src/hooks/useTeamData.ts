@@ -14,15 +14,21 @@ import {
 import type { ImportPlayer, PlayerInput, TeamFormInput, TeamInput } from '@/lib/supabase/schemas'
 import { resetTeamEverywhere } from '@/stores/boardStore'
 
+// Hooks do TanStack Query para times e jogadores. Leituras usam useQuery (cache por chave); escritas usam
+// useMutation e, ao concluir, invalidam as chaves afetadas, o que faz o Query buscar os dados de novo.
+
+/** Chaves do cache: a lista de times e o elenco de cada time, separado por id. */
 export const teamKeys = {
   all: ['teams'] as const,
   players: (teamId: string) => ['players', teamId] as const,
 }
 
+/** Times visíveis para quem está logado (padrão e próprios) ou só os padrão, para visitantes. */
 export function useTeams() {
   return useQuery({ queryKey: teamKeys.all, queryFn: fetchTeams })
 }
 
+/** Elenco de um time. Sem `teamId`, a consulta fica desligada (`enabled: false`) e não vai à rede. */
 export function usePlayers(teamId: string | undefined) {
   return useQuery({
     queryKey: teamKeys.players(teamId ?? ''),
@@ -52,6 +58,7 @@ export function useDeleteTeam() {
   return useMutation({
     mutationFn: (id: string) => deleteTeam(id),
     onSuccess: (_data, id) => {
+      // O elenco do time excluído sai do cache de vez (não há o que buscar de novo).
       qc.removeQueries({ queryKey: teamKeys.players(id) })
       return qc.invalidateQueries({ queryKey: teamKeys.all })
     },
@@ -66,6 +73,7 @@ export function useCopyTeam() {
   })
 }
 
+/** Mudou o elenco: recarrega os jogadores e também a lista de times, que traz a contagem de jogadores. */
 function invalidateTeam(qc: ReturnType<typeof useQueryClient>, teamId: string) {
   return Promise.all([
     qc.invalidateQueries({ queryKey: teamKeys.players(teamId) }),
@@ -73,6 +81,7 @@ function invalidateTeam(qc: ReturnType<typeof useQueryClient>, teamId: string) {
   ])
 }
 
+/** Cria (`id` null) ou edita um jogador do time. */
 export function useSavePlayer(teamId: string) {
   const qc = useQueryClient()
   return useMutation({
@@ -90,6 +99,7 @@ export function useDeletePlayer(teamId: string) {
   })
 }
 
+/** Importa um CSV: cria o time ou, se já existe um com o mesmo nome, substitui o elenco inteiro. */
 export function useImportTeam() {
   const qc = useQueryClient()
   return useMutation({

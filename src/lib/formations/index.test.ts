@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FIXED_FORMATIONS, getFixedFormation, mirrorFormation, slotPoint, assignPlayersToSlots, validateCustomFormation, buildCustomSlots } from './index'
+import { FIXED_FORMATIONS, getFixedFormation, slotPoint, assignPlayersToSlots, validateCustomFormation, buildCustomSlots } from './index'
 import type { FormationSlot } from '@/lib/supabase/schemas'
 
 const slot = (position: string, index = 0): FormationSlot => ({ slot: index, position, x: 34, y: 100 })
@@ -36,14 +36,13 @@ describe('formações fixas', () => {
       }
     })
   }
-  it('espelha sem mutar e obtém pontos por lado', () => {
-    const f = { id: 'teste', name: 'Teste', slots: [slot('LD')] }
-    const before = structuredClone(f)
-    expect(mirrorFormation(mirrorFormation(f))).toEqual(f)
-    expect(f).toEqual(before)
-    expect(mirrorFormation(f).slots[0]).not.toBe(f.slots[0])
-    expect(slotPoint(f.slots[0]!, 'home')).toEqual({ x: 34, y: 100 })
-    expect(slotPoint(f.slots[0]!, 'away')).toEqual({ x: 34, y: 5 })
+  it('obtém pontos por lado sem mutar o slot', () => {
+    const entry = Object.freeze(slot('LD'))
+    expect(slotPoint(entry, 'home')).toEqual({ x: 34, y: 100 })
+    expect(slotPoint(entry, 'away')).toEqual({ x: 34, y: 5 })
+    expect(slotPoint(entry, 'home')).not.toBe(entry)
+    expect(slotPoint(entry, 'away')).not.toBe(entry)
+    expect(entry).toEqual(slot('LD'))
   })
 })
 

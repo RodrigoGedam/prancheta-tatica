@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { useBoardStore } from './boardStore'
+import { prunePlayersEverywhere, resetTeamEverywhere, useBoardStore } from './boardStore'
 
 const s = () => useBoardStore.getState()
 
@@ -43,23 +43,23 @@ describe('boardStore', () => {
     expect(s().hidden.home).toBe(false)
   })
 
-  it('prunePlacements tira só quem saiu do elenco', () => {
+  it('prunePlayersEverywhere tira só quem saiu do elenco', () => {
     s().setTeam('home', 't1')
     s().setPlacements('home', [
       { playerId: 'a', x: 1, y: 1 },
       { playerId: 'b', x: 2, y: 2 },
     ])
-    s().prunePlacements('home', new Set(['b']))
+    prunePlayersEverywhere('t1', new Set(['b']))
     expect(s().sides.home.placements.map((p) => p.playerId)).toEqual(['b'])
     expect(s().sides.home.initialized).toBe(true)
   })
 
-  it('resetTeam reinicializa só o lado com aquele time', () => {
+  it('resetTeamEverywhere reinicializa só o lado com aquele time', () => {
     s().setTeam('home', 't1')
     s().setTeam('away', 't2')
     s().setPlacements('home', [{ playerId: 'a', x: 1, y: 1 }])
     s().setPlacements('away', [{ playerId: 'b', x: 1, y: 1 }])
-    s().resetTeam('t1')
+    resetTeamEverywhere('t1')
     expect(s().sides.home).toMatchObject({ initialized: false, placements: [] })
     expect(s().sides.away.placements).toHaveLength(1)
   })

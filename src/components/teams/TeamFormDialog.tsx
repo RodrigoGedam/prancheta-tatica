@@ -17,6 +17,7 @@ interface TeamFormDialogProps {
   onSaved: (teamId: string) => void
 }
 
+/** Cria ou edita um time (nome, cor e formação padrão). */
 export function TeamFormDialog({ open, onOpenChange, team, defaultColor, onSaved }: TeamFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -98,6 +99,8 @@ function TeamForm({ team, defaultColor, onSaved }: Omit<TeamFormDialogProps, 'op
         </form.Field>
         <form.Field name="default_formation">
           {(field) => {
+            // Formação padrão que não está no catálogo (custom excluída ou ainda carregando): ganha uma opção
+            // própria para o select não mostrar outra no lugar; na prancheta, o time usa a padrão do app.
             const known = [...catalog.fixed, ...catalog.custom].some((f) => f.id === field.state.value)
             return (
               <div className="flex flex-col gap-1.5">

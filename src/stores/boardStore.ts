@@ -1,3 +1,8 @@
+/**
+ * Estado da prancheta: times escolhidos, jogadores em campo (em metros) e desenhos, num store Zustand
+ * com histórico de desfazer (middleware `temporal` do zundo). Guarda só ids e coordenadas; nomes e
+ * elencos vêm do cache do TanStack Query. É salvo no localStorage por `autosave.ts`.
+ */
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import type { Point, Side } from '@/lib/geometry/pitch'
@@ -25,7 +30,10 @@ interface BoardState {
   sides: Record<Side, SideState>
   /** Esconder: some do campo e o banco recolhe; as posições ficam guardadas. Fora do histórico de desfazer. */
   hidden: Record<Side, boolean>
-  /** Contador global de camadas, compartilhado pelos dois lados (empilhamento entre times). */
+  /**
+   * Próximo `z` (ordem de empilhamento): quem é colocado recebe o valor atual e o contador sobe.
+   * É um só para os dois lados, para que um jogador solto sobre um adversário fique por cima dele.
+   */
   nextZ: number
   /** Desenhos (camada própria, independente dos times), na ordem de desenho. */
   shapes: DrawShape[]
@@ -33,12 +41,9 @@ interface BoardState {
   setTeam: (side: Side, teamId: string | null, formationId?: string) => void
   /** Substitui todos os jogadores em campo do lado (formação inicial, troca de formação, resetar). */
   setPlacements: (side: Side, placements: Omit<Placement, 'z'>[], formationId?: string) => void
+  /** Põe (ou move) um jogador no ponto, em metros, e o leva para o topo da pilha (maior `z`). */
   placePlayer: (side: Side, playerId: string, point: Point) => void
   removePlayer: (side: Side, playerId: string) => void
-  /** Tira do campo quem não está mais no elenco. */
-  prunePlacements: (side: Side, validIds: ReadonlySet<string>) => void
-  /** Elenco reimportado (ids novos): o lado com esse time recebe a formação de novo. */
-  resetTeam: (teamId: string) => void
   setFormationId: (side: Side, formationId: string) => void
   toggleHidden: (side: Side) => void
   setColorOverride: (side: Side, color: string | null) => void
@@ -56,11 +61,17 @@ interface BoardState {
 /** O que entra no histórico de desfazer (tudo menos Esconder). */
 type Tracked = Pick<BoardState, 'sides' | 'nextZ' | 'shapes'>
 
+/** Máximo de passos guardados para desfazer; os mais antigos são descartados. */
 const HISTORY_LIMIT = 100
+
+/** Recorta do estado só a parte que o zundo guarda em cada passo. */
 
 const partialize = (s: BoardState): Tracked => ({ sides: s.sides, nextZ: s.nextZ, shapes: s.shapes })
 
-/** As ações sempre criam objetos novos quando mudam algo; comparar referências basta. */
+/**
+ * O zundo cria um passo quando esta função diz que o estado mudou. As ações sempre criam objetos novos
+ * quando mudam algo e mantêm os mesmos quando nada muda, então comparar referências basta.
+ */
 const sameTracked = (a: Tracked, b: Tracked) => a.sides === b.sides && a.nextZ === b.nextZ && a.shapes === b.shapes
 
 /** Comparação por conteúdo, para o fim de um gesto (ex.: texto criado e cancelado não deixa passo vazio). */
@@ -80,9 +91,12 @@ export function snapshotOf(s: Pick<BoardState, 'sides' | 'hidden' | 'nextZ' | 's
   return { sides: s.sides, hidden: s.hidden, nextZ: s.nextZ, shapes: s.shapes }
 }
 
+/** Store da prancheta. `useBoardStore.temporal` dá acesso às pilhas de desfazer/refazer do zundo. */
 export const useBoardStore = create<BoardState>()(
   temporal(
     (set) => {
+      // Altera um lado com objetos novos (o histórico só vê o que muda de referência). `zUsed` é quantos
+      // valores de `z` a mudança consumiu, para o contador global avançar junto.
       const patch = (side: Side, fn: (s: SideState, nextZ: number) => Partial<SideState>, zUsed = 0) =>
         set((state) => ({
           sides: { ...state.sides, [side]: { ...state.sides[side], ...fn(state.sides[side], state.nextZ) } },
@@ -90,6 +104,7 @@ export const useBoardStore = create<BoardState>()(
         }))
 
       return {
+        // Carga síncrona da prancheta salva, já na criação do store (não usa o middleware `persist`).
         ...loadSnapshot(),
 
         addShape: (shape) => set((state) => ({ shapes: [...state.shapes, shape] })),
@@ -156,11 +171,6 @@ export const useBoardStore = create<BoardState>()(
         removePlayer: (side, playerId) =>
           patch(side, (s) => ({ placements: s.placements.filter((p) => p.playerId !== playerId) })),
 
-        prunePlacements: (side, validIds) =>
-          patch(side, (s) => ({ placements: s.placements.filter((p) => validIds.has(p.playerId)) })),
-
-        resetTeam: (teamId) => set((state) => ({ sides: mapSides(state.sides, resetIfTeam(teamId)) })),
-
         setFormationId: (side, formationId) => patch(side, () => ({ formationId })),
 
         toggleHidden: (side) => set((state) => ({ hidden: { ...state.hidden, [side]: !state.hidden[side] } })),
@@ -177,6 +187,7 @@ const history = () => useBoardStore.temporal.getState()
 /**
  * Roda mudanças automáticas (sincronização com o Supabase, formação inicial ao carregar o elenco)
  * sem criar passos no histórico: elas completam a ação do usuário que as provocou.
+ * Respeita uma pausa que já existia (ex.: dentro de um lote de gesto) e não a desfaz ao terminar.
  */
 export function withoutHistory(fn: () => void) {
   const wasTracking = history().isTracking
@@ -188,9 +199,13 @@ export function withoutHistory(fn: () => void) {
   }
 }
 
+/** Lote de gesto aberto (um só por vez): o estado de antes do gesto e se o histórico estava ligado. */
 let batch: { before: Tracked; wasTracking: boolean } | null = null
 
-/** Começa um gesto que vira um passo só no histórico (borracha passando, ponto de controle, edição de texto). */
+/**
+ * Começa um gesto que vira um passo só no histórico (borracha passando, ponto de controle, edição de texto).
+ * Guarda o estado de antes e pausa o zundo; um segundo begin com o lote aberto é ignorado.
+ */
 export function beginHistoryBatch() {
   if (batch) return
   batch = { before: partialize(useBoardStore.getState()), wasTracking: history().isTracking }
@@ -205,6 +220,7 @@ export function endHistoryBatch() {
   if (!wasTracking) return
   history().resume()
   if (sameContent(before, partialize(useBoardStore.getState()))) return
+  // Empilha o "antes" à mão, como o zundo faria num passo comum: entra em pastStates e o refazer é limpo.
   useBoardStore.temporal.setState({
     pastStates: [...history().pastStates, before].slice(-HISTORY_LIMIT),
     futureStates: [],
@@ -219,6 +235,7 @@ export function cancelHistoryBatch() {
   if (wasTracking) history().resume()
 }
 
+/** Correção de um lado; deve devolver o mesmo objeto quando não há o que mudar. */
 type SideRewrite = (side: SideState) => SideState
 
 /** Aplica `fn` aos dois lados; devolve o mesmo objeto se nada mudou. */
@@ -246,6 +263,7 @@ function rewriteEverywhere(fn: SideRewrite) {
     useBoardStore.setState((st) => {
       const sides = mapSides(st.sides, fn)
       if (sides === st.sides) return st
+      // Um lado que ficou sem time deixa de estar escondido, como acontece ao trocar de time (setTeam).
       const hidden = { ...st.hidden }
       for (const side of ['home', 'away'] as const) {
         if (sides[side] !== st.sides[side] && sides[side].teamId === null) hidden[side] = false
@@ -253,6 +271,7 @@ function rewriteEverywhere(fn: SideRewrite) {
       return { sides, hidden }
     }),
   )
+  // Aplica a mesma correção a um estado guardado (passo do histórico ou o "antes" de um lote aberto).
   const scrub = <T extends Partial<Tracked>>(state: T): T => {
     if (!state.sides) return state
     const sides = mapSides(state.sides, fn)
@@ -312,6 +331,7 @@ export function undo() {
   history().undo()
 }
 
+/** Refazer, com a mesma regra do desfazer para gestos em andamento. */
 export function redo() {
   if (batch) return
   history().redo()

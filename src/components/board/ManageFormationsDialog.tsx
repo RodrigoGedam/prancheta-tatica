@@ -11,6 +11,7 @@ import { formationNameSchema } from './SaveFormationDialog'
 const iconButton =
   'flex size-[30px] cursor-pointer items-center justify-center rounded-md border border-transparent bg-transparent p-0 text-muted hover:bg-control hover:text-ink disabled:opacity-40'
 
+/** Lista as formações customizadas do usuário, com renomear e excluir. */
 export function ManageFormationsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const formations = useCustomFormations()
   const remove = useDeleteFormation()
@@ -65,6 +66,7 @@ export function ManageFormationsDialog({ open, onOpenChange }: { open: boolean; 
 
 function FormationItem({ formation, onDelete }: { formation: FormationRow; onDelete: () => void }) {
   const rename = useRenameFormation()
+  // Nome em edição; null = fora do modo de renomear.
   const [draft, setDraft] = useState<string | null>(null)
   const parsed = draft === null ? null : formationNameSchema.safeParse(draft)
   const error = parsed && !parsed.success ? parsed.error.issues[0]?.message : (rename.error?.message ?? null)
@@ -90,6 +92,7 @@ function FormationItem({ formation, onDelete }: { formation: FormationRow; onDel
             onKeyDown={(e) => {
               if (e.key === 'Enter') save()
               if (e.key === 'Escape') {
+                // Esc cancela só a edição do nome, sem fechar o diálogo.
                 e.stopPropagation()
                 setDraft(null)
               }

@@ -18,6 +18,7 @@ export const DEFAULT_PLAYER_SORT: PlayerSort = { column: 'position', desc: false
 
 const collator = new Intl.Collator('pt-BR', { sensitivity: 'base', numeric: true })
 
+/** Compara em português, ignorando caixa/acentos e tratando sequências de dígitos como números. */
 export function compareNames(a: string, b: string): number {
   return collator.compare(a, b)
 }

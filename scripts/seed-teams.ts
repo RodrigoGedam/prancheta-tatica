@@ -79,6 +79,7 @@ async function main(): Promise<void> {
     return
   }
 
+  // Só chega à conexão após validar todos os CSVs; falha de validação impede qualquer gravação.
   const result = envSchema.safeParse(process.env)
   if (!result.success) {
     console.error('Configure VITE_SUPABASE_URL com uma URL válida e SUPABASE_SECRET_KEY com a chave secreta no arquivo .env.local.')
@@ -107,6 +108,7 @@ async function main(): Promise<void> {
     console.log(`${prefix}${club.name}: ${verb}, ${players.length} jogadores${details}`)
     if (!apply) continue
     const team = teamInputSchema.parse({ name: club.name, color: club.color })
+    // Cada clube é importado atomicamente pela RPC; a carga inteira não é uma única transação.
     const { error: importError } = await supabase.rpc('import_system_team', {
       p_name: team.name,
       p_color: team.color,

@@ -1,6 +1,7 @@
 import { lighten } from '@/lib/colors'
 import type { PlayerRow } from '@/lib/supabase/schemas'
 
+/** Largura do tooltip e distância do centro do token, em px. */
 const WIDTH = 176
 const OFFSET = 26
 
@@ -19,6 +20,7 @@ interface PlayerTooltipProps {
 export function PlayerTooltip({ player, teamName, numberColor, left, top, stageWidth, stageHeight }: PlayerTooltipProps) {
   const flipX = left + OFFSET + WIDTH > stageWidth
   const x = flipX ? left - OFFSET - WIDTH : left + OFFSET
+  // Um pouco acima do token, sem sair do Stage (8 px de margem em cima, ~90 px de altura do tooltip embaixo).
   const y = Math.min(Math.max(top - 30, 8), stageHeight - 90)
   return (
     <div

@@ -10,6 +10,7 @@ import { BENCH_DRAG_MIME, serializeBenchDrag, useBenchDropStore } from './benchD
 import { SaveFormationDialog } from './SaveFormationDialog'
 import { SIDE_LABEL, useSideActions, type SideModel } from './useBoardModel'
 
+/** Painel lateral (HTML) com os bancos de reservas dos dois times e os botões de cada lado. */
 export function BenchPanel({ sides }: { sides: readonly SideModel[] }) {
   return (
     <aside
@@ -34,6 +35,7 @@ function BenchSection({ model }: { model: SideModel }) {
   // Jogadores só se movem com a ferramenta Selecionar (spec §6).
   const selecting = useToolStore((s) => s.tool === 'select')
   const { side, team } = model
+  // Um token do próprio time está sendo arrastado sobre este banco: mostra o destaque de "solte aqui".
   const dropping = useBenchDropStore((s) => s.target === side) && team !== undefined
   const { bench } = model
   const actions = useSideActions(model)
@@ -42,6 +44,7 @@ function BenchSection({ model }: { model: SideModel }) {
   const [saving, setSaving] = useState(false)
 
   return (
+    // `data-bench-side` é a marca que benchSideAt procura para saber se um token foi solto sobre este banco.
     <section
       data-bench-side={side}
       aria-label={`Banco do ${SIDE_LABEL[side].toLowerCase()}`}
@@ -117,6 +120,7 @@ function BenchSection({ model }: { model: SideModel }) {
                 key={p.id}
                 draggable={selecting}
                 onDragStart={(e) => {
+                  // Drag and drop do HTML5: a carga vai no dataTransfer e o drop é tratado em Board.tsx.
                   e.dataTransfer.setData(BENCH_DRAG_MIME, serializeBenchDrag(side, p.id))
                   e.dataTransfer.effectAllowed = 'move'
                 }}

@@ -66,6 +66,7 @@ export interface Bounds {
 function distance(a: Point, b: Point): number { return Math.hypot(a.x - b.x, a.y - b.y) }
 function segmentDistance(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x, dy = b.y - a.y, squared = dx * dx + dy * dy
+  // Projeta no segmento e limita às pontas; segmento de comprimento zero vira um ponto.
   const t = squared === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / squared))
   return distance(p, { x: a.x + t * dx, y: a.y + t * dy })
 }
@@ -78,6 +79,7 @@ function insideBounds(b: Bounds, p: Point, tol = 0): boolean {
 }
 function triangleHit(p: Point, [a, b, c]: [Point, Point, Point]): boolean {
   const cross = (u: Point, v: Point) => (v.x - u.x) * (p.y - u.y) - (v.y - u.y) * (p.x - u.x)
+  // O ponto está no triângulo se ficar do mesmo lado das três bordas.
   const values = [cross(a, b), cross(b, c), cross(c, a)]
   return values.every(v => v >= 0) || values.every(v => v <= 0)
 }
@@ -116,6 +118,7 @@ export function arrowShaft(shape: ArrowShape | CurveShape): { from: Point; contr
   const lerp = (a: Point, b: Point): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t })
   return { from: { ...shape.from }, control: lerp(shape.from, shape.control), to: curvePoint(shape, t) }
 }
+/** Testa se o clique atinge o desenho; ponto e tolerância em metros, incluindo metade da espessura. */
 export function hitTest(shape: DrawShape, point: Point, tolerance: number): boolean {
   const tol = tolerance + strokeWidthOf(shape) / 2
   switch (shape.type) {
@@ -131,7 +134,7 @@ export function hitTest(shape: DrawShape, point: Point, tolerance: number): bool
       if (rx === 0 || ry === 0) return segmentDistance(point, { x: cx - rx, y: cy - ry }, { x: cx + rx, y: cy + ry }) <= tol
       const x = Math.abs(point.x - cx), y = Math.abs(point.y - cy)
       if ((x / rx) ** 2 + (y / ry) ** 2 <= 1) return true
-      // O ponto exterior mais proximo satisfaz a equacao do multiplicador de Lagrange.
+      // Busca por metades o ponto mais próximo na borda da elipse, para medir a tolerância em metros.
       let low = 0, high = Math.hypot(rx * x, ry * y)
       for (let i = 0; i < 64; i++) {
         const mid = (low + high) / 2
@@ -151,12 +154,15 @@ export function arrowHead(from: Point, to: Point, size: number): [Point, Point, 
   const x = to.x - dx * size, y = to.y - dy * size
   return [{ x: x + dy * size / 2, y: y - dx * size / 2 }, { ...to }, { x: x - dy * size / 2, y: y + dx * size / 2 }]
 }
+/** Cria a curvatura inicial deslocando o meio perpendicularmente ao segmento, em metros. */
 export function defaultControlPoint(a: Point, b: Point): Point {
   return { x: (a.x + b.x) / 2 + (b.y - a.y) / 4, y: (a.y + b.y) / 2 - (b.x - a.x) / 4 }
 }
+/** Simplifica o traço por RDP (remove pontos quase alinhados), com tolerância `epsilon` em metros. */
 export function simplifyPath(points: readonly Point[], epsilon: number): Point[] {
   if (points.length <= 2) return [...points]
   const keep = new Set([0, points.length - 1])
+  // Divide no ponto mais distante e repete nos dois trechos; a pilha evita recursão em traços longos.
   const pending: [number, number][] = [[0, points.length - 1]]
   while (pending.length) {
     const [start, end] = pending.pop()!
@@ -169,12 +175,15 @@ export function simplifyPath(points: readonly Point[], epsilon: number): Point[]
   }
   return points.filter((_, i) => keep.has(i))
 }
+/** Limites em metros, válidos mesmo quando o arrasto vai da direita para a esquerda ou de baixo para cima. */
 export function rectFromDrag(a: Point, b: Point): Bounds {
   return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(a.x - b.x), height: Math.abs(a.y - b.y) }
 }
+/** Usa o retângulo do arrasto para obter centro e semieixos da elipse, em metros. */
 export function ellipseFromDrag(a: Point, b: Point): { cx: number; cy: number; rx: number; ry: number } {
   return { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, rx: Math.abs(a.x - b.x) / 2, ry: Math.abs(a.y - b.y) / 2 }
 }
+/** Desloca todos os pontos por `dx` e `dy` metros sem alterar o desenho original. */
 export function translateShape<S extends DrawShape>(shape: S, dx: number, dy: number): S {
   const move = (p: Point): Point => ({ x: p.x + dx, y: p.y + dy })
   switch (shape.type) {
@@ -191,12 +200,14 @@ function pointsBounds(points: Point[]): Bounds {
   for (const p of points) { x = Math.min(x, p.x); y = Math.min(y, p.y); right = Math.max(right, p.x); bottom = Math.max(bottom, p.y) }
   return { x, y, width: right - x, height: bottom - y }
 }
+/** Retângulo envolvente em metros, incluindo pontas de flecha e sem acrescentar espessura do traço. */
 export function shapeBounds(shape: DrawShape): Bounds {
   switch (shape.type) {
     case 'free': return pointsBounds(shape.points)
     case 'arrow': return pointsBounds([shape.from, ...arrowHead(shape.from, shape.to, arrowHeadSize(shape.style))])
     case 'curve': {
       const points = [shape.from, ...arrowHead(shape.control, shape.to, arrowHeadSize(shape.style))]
+      // Os extremos da curva podem ficar entre as pontas: procura onde a derivada de cada eixo zera.
       for (const axis of ['x', 'y'] as const) {
         const denominator = shape.from[axis] - 2 * shape.control[axis] + shape.to[axis]
         const t = (shape.from[axis] - shape.control[axis]) / denominator
@@ -209,10 +220,12 @@ export function shapeBounds(shape: DrawShape): Bounds {
     case 'text': return textBounds(shape)
   }
 }
+/** Estima a caixa do texto em metros: largura média de 0,55 × fonte e entrelinha de 1,2 × fonte. */
 export function textBounds(shape: TextShape): Bounds {
   const lines = shape.text.split('\n')
   return { x: shape.x, y: shape.y, width: Math.max(...lines.map(line => line.length)) * shape.fontSize * 0.55, height: lines.length * shape.fontSize * 1.2 }
 }
+/** Descarta gestos pequenos demais: 0,5 m no traço/caixa, 1 m entre pontas de flecha, ou texto vazio. */
 export function isDegenerate(shape: DrawShape): boolean {
   switch (shape.type) {
     case 'free': return shape.points.reduce((sum, p, i) => sum + (i ? distance(shape.points[i - 1]!, p) : 0), 0) < 0.5

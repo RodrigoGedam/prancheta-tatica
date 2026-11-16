@@ -18,6 +18,10 @@ interface ImportCsvDialogProps {
   onImported: (teamId: string) => void
 }
 
+/**
+ * Importa um time por CSV: lê o arquivo, mostra a prévia linha a linha (válida, aviso, erro) e grava.
+ * Se o usuário já tem um time com o mesmo nome, o elenco dele é substituído.
+ */
 export function ImportCsvDialog({ open, onOpenChange, initialTeam, onImported }: ImportCsvDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,11 +38,13 @@ interface LoadedFile {
 
 const ENCODING_LABEL: Record<CsvEncoding, string> = { 'utf-8': 'UTF-8', 'windows-1252': 'Windows-1252' }
 
+/** Sugere o nome do time a partir do arquivo ("sao-paulo.csv" vira "Sao paulo"), com até 40 caracteres. */
 function nameFromFile(fileName: string): string {
   const base = fileName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim()
   return (base.charAt(0).toUpperCase() + base.slice(1)).slice(0, 40)
 }
 
+/** Só as linhas aproveitáveis (com `player`), no formato que a função SQL de importação espera. */
 function toImportPlayers(rows: readonly CsvRow[]): ImportPlayer[] {
   return rows.flatMap((r) =>
     r.player
@@ -80,6 +86,7 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
   async function loadFile(file: File) {
     setReadError(null)
     try {
+      // Lê os bytes, e não o texto, para detectar a codificação (UTF-8 ou Windows-1252, comum no Excel).
       const { text, encoding } = decodeCsvBytes(new Uint8Array(await file.arrayBuffer()))
       setLoaded({ fileName: file.name, encoding, parsed: parsePlayersCsv(text) })
       if (!form.getFieldValue('name')) form.setFieldValue('name', nameFromFile(file.name))
@@ -151,6 +158,7 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
           onChange={(e) => {
             const file = e.target.files?.[0]
             if (file) void loadFile(file)
+            // Limpa o input para que escolher o mesmo arquivo de novo dispare onChange outra vez.
             e.target.value = ''
           }}
         />
@@ -271,7 +279,10 @@ function ImportCsvContent({ initialTeam, onImported }: Omit<ImportCsvDialogProps
   )
 }
 
-/** Só os times do usuário: importar com o nome de um time padrão cria um time próprio. */
+/**
+ * Time do usuário com esse nome (sem diferenciar caixa), que a importação substituiria.
+ * Só os times do usuário: importar com o nome de um time padrão cria um time próprio.
+ */
 function findTeam<T extends { name: string; user_id: string | null }>(teams: readonly T[] | undefined, name: string): T | undefined {
   const key = name.trim().toLowerCase()
   return key ? teams?.find((t) => !isDefaultTeam(t) && t.name.toLowerCase() === key) : undefined
@@ -287,6 +298,7 @@ function Chip({ tone, children }: { tone: keyof typeof chipTones; children: Reac
   return <span className={cn('rounded-full px-2.5 py-1 text-[13px] font-semibold', chipTones[tone])}>{children}</span>
 }
 
+/** Prévia do CSV: uma linha por registro, com o número da linha no arquivo e os problemas encontrados. */
 function PreviewTable({ rows }: { rows: readonly CsvRow[] }) {
   return (
     <div className="max-h-[360px] overflow-auto rounded-[10px] border border-line">

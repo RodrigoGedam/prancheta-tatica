@@ -9,11 +9,14 @@ import { buildCustomSlots, validateCustomFormation } from '@/lib/formations'
 import { useBoardStore } from '@/stores/boardStore'
 import { SIDE_LABEL, type SideModel } from './useBoardModel'
 
+/** Nome de formação (também usado ao renomear, em ManageFormationsDialog). */
 export const formationNameSchema = z
   .string()
   .trim()
   .min(1, 'Informe o nome da formação.')
   .max(40, 'Use no máximo 40 caracteres.')
+
+const formationFormSchema = z.object({ name: formationNameSchema })
 
 interface SaveFormationDialogProps {
   open: boolean
@@ -21,6 +24,10 @@ interface SaveFormationDialogProps {
   model: SideModel
 }
 
+/**
+ * Salva as posições atuais de um lado como formação customizada e passa o lado a usá-la.
+ * O formulário só é montado com o diálogo aberto, então cada abertura começa limpa.
+ */
 export function SaveFormationDialog({ open, onOpenChange, model }: SaveFormationDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,6 +38,7 @@ export function SaveFormationDialog({ open, onOpenChange, model }: SaveFormation
 
 function SaveFormationForm({ model, onDone }: { model: SideModel; onDone: () => void }) {
   const create = useCreateFormation()
+  // Converte as posições em slots do time de baixo (desfaz o espelhamento do time de cima) e valida.
   const validation = useMemo(
     () =>
       validateCustomFormation(
@@ -44,7 +52,7 @@ function SaveFormationForm({ model, onDone }: { model: SideModel; onDone: () => 
 
   const form = useForm({
     defaultValues: { name: '' },
-    validators: { onChange: z.object({ name: formationNameSchema }), onSubmit: z.object({ name: formationNameSchema }) },
+    validators: { onChange: formationFormSchema, onSubmit: formationFormSchema },
     onSubmit: async ({ value }) => {
       if (!validation.ok) return
       const saved = await create.mutateAsync({ name: formationNameSchema.parse(value.name), slots: validation.slots })
@@ -77,6 +85,7 @@ function SaveFormationForm({ model, onDone }: { model: SideModel; onDone: () => 
         className="flex flex-col gap-[18px]"
         onSubmit={(e) => {
           e.preventDefault()
+          // A falha já aparece pela mutação (`create.error`); o catch só evita uma promessa rejeitada solta.
           void form.handleSubmit().catch(() => undefined)
         }}
       >

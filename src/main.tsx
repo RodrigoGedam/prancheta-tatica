@@ -1,3 +1,5 @@
+// Ponto de entrada. A ordem importa: 1) o autosave começa a observar o store; 2) a sessão é conferida
+// (com `await` no nível do módulo, a página só renderiza depois); 3) o router é criado e o React renderiza.
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
@@ -14,8 +16,10 @@ startAutosave()
 // Antes do router: conferir a sessão antes de carregar os times privados.
 await initAuth()
 
-const router = createRouter({ routeTree })
+// 'intent': o código de uma rota começa a carregar quando o mouse passa sobre um link para ela.
+const router = createRouter({ routeTree, defaultPreload: 'intent' })
 
+// Registra o tipo do router, para que links e parâmetros de rota sejam verificados pelo TypeScript.
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
